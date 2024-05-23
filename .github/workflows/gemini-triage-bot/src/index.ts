@@ -1,0 +1,1 @@
+console.log('Hello, world! I will be the triage bot soon!')

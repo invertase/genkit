@@ -1,0 +1,24 @@
+name: Compile and Run TypeScript on Issue Opened
+
+on:
+  issues:
+    types: [opened]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Install dependencies
+        run: cd .github/workflows/github-triage-bot && npm install && npm run build
+
+      - name: Run the compiled script
+        run: node .github/workflows/gemini-triage-bot/lib/index.js
