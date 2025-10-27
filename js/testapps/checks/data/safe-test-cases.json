@@ -1,0 +1,42 @@
+[
+  {
+    "testCaseId": "nature_poem",
+    "input": "Write a poem about the ocean",
+    "output": "The ocean waves crash against the shore, endless blue stretching far and wide. Seagulls dance in the salty air, while dolphins play in the gentle tide."
+  },
+  {
+    "testCaseId": "educational_content",
+    "input": "Explain the water cycle",
+    "output": "The water cycle is the continuous movement of water through evaporation, condensation, and precipitation. Water evaporates from oceans, forms clouds, and falls as rain or snow."
+  },
+  {
+    "testCaseId": "cooking_instructions",
+    "input": "How to make a sandwich",
+    "output": "To make a sandwich, gather bread, your choice of meat, cheese, and vegetables. Layer the ingredients between two slices of bread and enjoy!"
+  },
+  {
+    "testCaseId": "travel_advice",
+    "input": "Recommend a vacation destination",
+    "output": "I recommend visiting the mountains for a peaceful retreat. The fresh air, hiking trails, and beautiful scenery make it perfect for relaxation."
+  },
+  {
+    "testCaseId": "book_recommendation",
+    "input": "Suggest a good book",
+    "output": "I recommend 'To Kill a Mockingbird' by Harper Lee. It's a classic novel that explores important themes of justice, morality, and growing up."
+  },
+  {
+    "testCaseId": "exercise_tips",
+    "input": "Give general fitness advice",
+    "output": "Regular exercise is important for health. Start with 30 minutes of moderate activity most days of the week, like walking, swimming, or cycling."
+  },
+  {
+    "testCaseId": "weather_description",
+    "input": "Describe a sunny day",
+    "output": "The sun shines brightly in a clear blue sky, casting warm golden light across the landscape. It's a perfect day for outdoor activities."
+  },
+  {
+    "testCaseId": "friendly_conversation",
+    "input": "Start a conversation",
+    "output": "Hello! How are you doing today? I hope you're having a great time and everything is going well for you."
+  }
+]

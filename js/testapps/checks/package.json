@@ -1,0 +1,27 @@
+{
+  "name": "checks-testapp",
+  "version": "1.0.0",
+  "description": "Test app for @genkit-ai/checks plugin demonstrating safety guardrails and evaluation",
+  "main": "lib/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node lib/index.js",
+    "build": "tsc",
+    "build:watch": "tsc --watch",
+    "example": "npx tsx src/example.ts",
+    "dev": "genkit start -- tsx --watch src/index.ts"
+  },
+  "keywords": ["genkit", "checks", "ai-safety", "guardrails"],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "genkit": "workspace:*",
+    "@genkit-ai/googleai": "workspace:*",
+    "@genkit-ai/checks": "workspace:*",
+    "express": "^4.20.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.2",
+    "tsx": "^4.7.0"
+  }
+}
