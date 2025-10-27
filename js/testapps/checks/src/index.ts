@@ -14,21 +14,18 @@
  * limitations under the License.
  */
 
-import { gemini15Flash, googleAI } from '@genkit-ai/googleai';
+import { gemini25FlashLite, googleAI } from '@genkit-ai/googleai';
 import { checks, ChecksEvaluationMetricType } from '@genkit-ai/checks';
 import { genkit, z } from 'genkit';
 import { flows } from './flows';
 
-// Configure Genkit with Google AI and Checks plugins
 const ai = genkit({
   plugins: [
     googleAI(),
     checks({
-      // Project to charge quota to. Set via environment variable or replace with your project ID
       projectId: process.env.GCLOUD_PROJECT || 'your-project-id',
       evaluation: {
         metrics: [
-          // Configure all available safety policies with default thresholds
           ChecksEvaluationMetricType.DANGEROUS_CONTENT,
           ChecksEvaluationMetricType.PII_SOLICITING_RECITING,
           ChecksEvaluationMetricType.HARASSMENT,
@@ -43,10 +40,8 @@ const ai = genkit({
   ],
 });
 
-// Export flows for use in Genkit UI
 export const { safePoemFlow, contentModerationFlow, safetyEvaluationFlow } = flows(ai);
 
-// Simple test flow without safety checks for comparison
 export const unsafePoemFlow = ai.defineFlow(
   {
     name: 'unsafePoemFlow',
@@ -55,14 +50,13 @@ export const unsafePoemFlow = ai.defineFlow(
   },
   async (topic) => {
     const { text } = await ai.generate({
-      model: gemini15Flash,
+      model: gemini25FlashLite,
       prompt: `Write a poem about: ${topic}`,
     });
     return text;
   }
 );
 
-// Example of a flow that processes user input with safety checks
 export const userInputProcessor = ai.defineFlow(
   {
     name: 'userInputProcessor',
@@ -76,9 +70,8 @@ export const userInputProcessor = ai.defineFlow(
     }),
   },
   async ({ userInput, context }) => {
-    // This flow will automatically have safety checks applied via middleware
     const { text } = await ai.generate({
-      model: gemini15Flash,
+      model: gemini25FlashLite,
       prompt: `Respond to this user input: "${userInput}"${context ? ` in the context of: ${context}` : ''}`,
     });
     

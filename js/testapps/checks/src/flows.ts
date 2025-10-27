@@ -43,11 +43,11 @@ export function flows(ai: Genkit) {
               ChecksEvaluationMetricType.OBSCENITY_AND_PROFANITY,
               {
                 type: ChecksEvaluationMetricType.SEXUALLY_EXPLICIT,
-                threshold: 0.3, // Lower threshold = more strict
+                threshold: 0.3, 
               },
               {
                 type: ChecksEvaluationMetricType.VIOLENCE_AND_GORE,
-                threshold: 0.2, // Very strict for violence
+                threshold: 0.2,  
               },
             ],
           }),
@@ -57,7 +57,6 @@ export function flows(ai: Genkit) {
     }
   );
 
-  // Content moderation flow with custom thresholds
   const contentModerationFlow = ai.defineFlow(
     {
       name: 'contentModerationFlow',
@@ -104,7 +103,6 @@ export function flows(ai: Genkit) {
           blocked: false,
         };
       } catch (error: any) {
-        // If content is blocked, extract violation information
         if (error.message?.includes('violated Checks policies')) {
           const violations = error.message.match(/\[([^\]]+)\]/)?.[1]?.split(' ') || [];
           return {
@@ -118,7 +116,6 @@ export function flows(ai: Genkit) {
     }
   );
 
-  // Flow for testing different safety policies
   const safetyEvaluationFlow = ai.defineFlow(
     {
       name: 'safetyEvaluationFlow',
