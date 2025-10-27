@@ -23,7 +23,7 @@ const ai = genkit({
   plugins: [
     googleAI(),
     checks({
-      projectId: process.env.GCLOUD_PROJECT || 'your-project-id',
+      projectId: process.env.GCLOUD_PROJECT,
       evaluation: {
         metrics: [
           ChecksEvaluationMetricType.DANGEROUS_CONTENT,
