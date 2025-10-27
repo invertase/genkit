@@ -41,7 +41,7 @@ cd js/testapps/checks
 
 **Set up Google AI API Key:**
 ```bash
-export GEMINI_API_KEY=AIzaSyB0HmZY18l8YDlnw9XGHr89bCisoGjfXpg
+export GEMINI_API_KEY=your-gemini-api-key
 # or
 export GOOGLE_API_KEY=your-google-api-key
 ```
