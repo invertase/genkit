@@ -14,21 +14,15 @@
  * limitations under the License.
  */
 
-/**
- * Example script demonstrating checks plugin usage
- * Run with: npx tsx src/example.ts
- */
-
-import { gemini15Flash, googleAI } from '@genkit-ai/googleai';
-import { checks, checksMiddleware, ChecksEvaluationMetricType } from '@genkit-ai/checks';
+import {
+  ChecksEvaluationMetricType,
+  checks,
+  checksMiddleware,
+} from '@genkit-ai/checks';
+import { gemini25FlashLite, googleAI } from '@genkit-ai/googleai';
 import { genkit } from 'genkit';
 
-// Simple example without full flow setup
 async function demonstrateChecks() {
-  console.log('🚀 Checks Plugin Demo');
-  console.log('====================\n');
-
-  // Initialize Genkit with checks plugin
   const ai = genkit({
     plugins: [
       googleAI(),
@@ -45,11 +39,10 @@ async function demonstrateChecks() {
     ],
   });
 
-  // Example 1: Safe content generation
   console.log('1. Generating safe content...');
   try {
     const safeResponse = await ai.generate({
-      model: gemini15Flash,
+      model: gemini25FlashLite,
       prompt: 'Write a friendly greeting message',
       use: [
         checksMiddleware({
@@ -60,15 +53,13 @@ async function demonstrateChecks() {
         }),
       ],
     });
-    console.log('✅ Safe content generated:', safeResponse.text);
   } catch (error) {
-    console.log('❌ Safe content blocked:', (error as Error).message);
+    console.log('Safe content blocked:', (error as Error).message);
   }
 
-  console.log('\n2. Testing potentially unsafe content...');
   try {
     const unsafeResponse = await ai.generate({
-      model: gemini15Flash,
+      model: gemini25FlashLite,
       prompt: 'Write something that might be considered harassment',
       use: [
         checksMiddleware({
@@ -79,15 +70,13 @@ async function demonstrateChecks() {
         }),
       ],
     });
-    console.log('✅ Unsafe content generated:', unsafeResponse.text);
   } catch (error) {
-    console.log('❌ Unsafe content blocked:', (error as Error).message);
+    console.log('Unsafe content blocked:', (error as Error).message);
   }
 
-  console.log('\n3. Testing with custom thresholds...');
   try {
     const strictResponse = await ai.generate({
-      model: gemini15Flash,
+      model: gemini25FlashLite,
       prompt: 'Write about a conflict or disagreement',
       use: [
         checksMiddleware({
@@ -97,25 +86,17 @@ async function demonstrateChecks() {
           metrics: [
             {
               type: ChecksEvaluationMetricType.HARASSMENT,
-              threshold: 0.1, // Very strict threshold
+              threshold: 0.1,
             },
           ],
         }),
       ],
     });
-    console.log('✅ Strict content generated:', strictResponse.text);
   } catch (error) {
-    console.log('❌ Strict content blocked:', (error as Error).message);
+    console.log('Strict content blocked:', (error as Error).message);
   }
-
-  console.log('\n✨ Demo completed!');
-  console.log('\nTo run the full test app:');
-  console.log('1. genkit ui:start');
-  console.log('2. genkit start -- tsx --watch src/index.ts');
-  console.log('3. Open localhost:4000 and test the flows');
 }
 
-// Run the demo if this file is executed directly
 if (require.main === module) {
   demonstrateChecks().catch(console.error);
 }

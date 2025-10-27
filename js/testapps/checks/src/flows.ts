@@ -37,12 +37,10 @@ export function flows(ai: Genkit) {
               projectId: process.env.GCLOUD_PROJECT || 'your-project-id',
             },
             metrics: [
-              // Use default thresholds for most policies
               ChecksEvaluationMetricType.DANGEROUS_CONTENT,
               ChecksEvaluationMetricType.HARASSMENT,
               ChecksEvaluationMetricType.HATE_SPEECH,
               ChecksEvaluationMetricType.OBSCENITY_AND_PROFANITY,
-              // Use stricter thresholds for sensitive content
               {
                 type: ChecksEvaluationMetricType.SEXUALLY_EXPLICIT,
                 threshold: 0.3, // Lower threshold = more strict
