@@ -71,7 +71,6 @@ function commonRef(
 
   return modelRef({
     name: `anthropic/${name}`,
-    namespace: 'anthropic',
     configSchema,
     version: defaultVersion,
     info: info ?? {
@@ -298,7 +297,6 @@ export function claudeModelReference(
   if (knownModel) {
     return modelRef({
       name: knownModel.name,
-      namespace: 'anthropic',
       info: knownModel.info,
       configSchema: knownModel.configSchema,
       version: knownModel.version,
@@ -308,8 +306,7 @@ export function claudeModelReference(
 
   // For unknown models, create a basic reference
   return modelRef({
-    name,
-    namespace: 'anthropic',
+    name: `anthropic/${name}`,
     configSchema: AnthropicConfigSchema,
     config,
   });
