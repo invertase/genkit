@@ -135,13 +135,23 @@ export function claudeRunner<TConfigSchema extends z.ZodTypeAny>(
   params: ClaudeRunnerParams,
   configSchema: TConfigSchema
 ) {
+<<<<<<< HEAD
   console.log('claudeRunner', params);
   const { defaultBetaApis, ...runnerParams } = params;
+=======
+  const { defaultApiVersion, ...runnerParams } = params;
+>>>>>>> main
 
   if (!runnerParams.client) {
     throw new Error('Anthropic client is required to create a runner');
   }
 
+<<<<<<< HEAD
+=======
+  let stableRunner: Runner | null = null;
+  let betaRunner: BetaRunner | null = null;
+
+>>>>>>> main
   return async (
     request: GenerateRequest<TConfigSchema>,
     {
@@ -160,11 +170,19 @@ export function claudeRunner<TConfigSchema extends z.ZodTypeAny>(
     >;
     const isBeta = resolveBetaEnabled(
       normalizedRequest.config,
+<<<<<<< HEAD
       defaultBetaApis
     );
     const runner = isBeta
       ? new BetaRunner(runnerParams)
       : new Runner(runnerParams);
+=======
+      defaultApiVersion
+    );
+    const runner = isBeta
+      ? (betaRunner ??= new BetaRunner(runnerParams))
+      : (stableRunner ??= new Runner(runnerParams));
+>>>>>>> main
     return runner.run(normalizedRequest, {
       streamingRequested,
       sendChunk,
@@ -211,7 +229,11 @@ export function claudeModel(
     name,
     client: runnerClient,
     cacheSystemPrompt: cachePrompt,
+<<<<<<< HEAD
     defaultBetaApis: betaApis,
+=======
+    defaultApiVersion: apiVersion,
+>>>>>>> main
   } = params;
   // Use supported model ref if available, otherwise create generic model ref
   const modelRef = KNOWN_CLAUDE_MODELS[name];
@@ -224,14 +246,22 @@ export function claudeModel(
     {
       name: `anthropic/${name}`,
       ...modelInfo,
+<<<<<<< HEAD
       configSchema,
+=======
+      configSchema: configSchema,
+>>>>>>> main
     },
     claudeRunner(
       {
         name,
         client: runnerClient,
         cacheSystemPrompt: cachePrompt,
+<<<<<<< HEAD
         defaultBetaApis: betaApis,
+=======
+        defaultApiVersion: apiVersion,
+>>>>>>> main
       },
       configSchema
     )

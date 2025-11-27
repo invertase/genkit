@@ -43,7 +43,11 @@ import type {
 import { logger } from 'genkit/logging';
 
 import { KNOWN_CLAUDE_MODELS, extractVersion } from '../models.js';
+<<<<<<< HEAD
 import { AnthropicBetaApis, AnthropicConfigSchema, type ClaudeRunnerParams } from '../types.js';
+=======
+import { AnthropicConfigSchema, type ClaudeRunnerParams } from '../types.js';
+>>>>>>> main
 import { BaseRunner } from './base.js';
 import { RunnerTypes } from './types.js';
 
@@ -349,6 +353,7 @@ export class BetaRunner extends BaseRunner<BetaRunnerTypes> {
       body.thinking = thinkingConfig as BetaMessageCreateParams['thinking'];
     }
 
+<<<<<<< HEAD
     // Add betas from the config
     const betas: string[] = [...(request.config?.beta?.apis || [])];
     Object.entries(AnthropicBetaApis).forEach(([key, value]) => {
@@ -368,6 +373,15 @@ export class BetaRunner extends BaseRunner<BetaRunnerTypes> {
     // }
 
     // return body;
+=======
+    if (request.output?.format && request.output.format !== 'text') {
+      throw new Error(
+        `Only text output format is supported for Claude models currently`
+      );
+    }
+
+    return body;
+>>>>>>> main
   }
 
   protected toGenkitResponse(message: BetaMessage): GenerateResponseData {

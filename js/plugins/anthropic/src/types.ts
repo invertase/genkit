@@ -33,7 +33,11 @@ export interface PluginOptions {
   apiKey?: string;
   cacheSystemPrompt?: boolean;
   /** Default API surface for all requests unless overridden per-request. */
+<<<<<<< HEAD
   betaApis?: string[];
+=======
+  apiVersion?: 'stable' | 'beta';
+>>>>>>> main
 }
 
 /**
@@ -51,7 +55,11 @@ interface ClaudeHelperParamsBase {
   name: string;
   client: Anthropic;
   cacheSystemPrompt?: boolean;
+<<<<<<< HEAD
   defaultBetaApis?: string[];
+=======
+  defaultApiVersion?: 'stable' | 'beta';
+>>>>>>> main
 }
 
 /**
@@ -64,6 +72,7 @@ export interface ClaudeModelParams extends ClaudeHelperParamsBase {}
  */
 export interface ClaudeRunnerParams extends ClaudeHelperParamsBase {}
 
+<<<<<<< HEAD
 export const AnthropicBetaApis = {
   // messageBatches: 'message-batches-2024-09-24',
   // promptCaching: 'prompt-caching-2024-07-31',
@@ -87,6 +96,8 @@ export const AnthropicBetaApis = {
   // structuredOutputs: 'structured-outputs-2025-11-13',
 } as const;
 
+=======
+>>>>>>> main
 export const AnthropicBaseConfigSchema = GenerationCommonConfigSchema.extend({
   tool_choice: z
     .union([
@@ -107,6 +118,7 @@ export const AnthropicBaseConfigSchema = GenerationCommonConfigSchema.extend({
       user_id: z.string().optional(),
     })
     .optional(),
+<<<<<<< HEAD
   beta: z.object({
     enabled: z.boolean().optional(),
     // messageBatches: z.boolean().optional(),
@@ -128,6 +140,10 @@ export const AnthropicBaseConfigSchema = GenerationCommonConfigSchema.extend({
     // skills: z.boolean().optional(),
     apis: z.array(z.string()).optional(),
   }).optional(),
+=======
+  /** Optional shorthand to pick API surface for this request. */
+  apiVersion: z.enum(['stable', 'beta']).optional(),
+>>>>>>> main
 });
 
 export type AnthropicBaseConfigSchemaType = typeof AnthropicBaseConfigSchema;
@@ -192,12 +208,18 @@ export const MEDIA_TYPES = {
 /**
  * Resolve whether beta API should be used for this call.
  * Priority:
+<<<<<<< HEAD
  *   1. request.config.beta.enabled
  *   2. pluginDefaultBetaApis (plugin-wide default)
+=======
+ *   1. request.config.apiVersion (per-request override - explicit stable or beta)
+ *   2. pluginDefaultApiVersion (plugin-wide default)
+>>>>>>> main
  *   3. otherwise stable
  */
 export function resolveBetaEnabled(
   cfg: AnthropicThinkingConfig | AnthropicBaseConfig | undefined,
+<<<<<<< HEAD
   pluginDefaultBetaApis?: string[]
 ): boolean {
   return true;
@@ -206,4 +228,13 @@ export function resolveBetaEnabled(
   // }
 
   // return (pluginDefaultBetaApis?.length ?? 0) > 0;
+=======
+  pluginDefaultApiVersion?: 'stable' | 'beta'
+): boolean {
+  if (cfg?.apiVersion !== undefined) {
+    return cfg.apiVersion === 'beta';
+  }
+  if (pluginDefaultApiVersion === 'beta') return true;
+  return false;
+>>>>>>> main
 }
