@@ -33,7 +33,7 @@ export interface PluginOptions {
   apiKey?: string;
   cacheSystemPrompt?: boolean;
   /** Default API surface for all requests unless overridden per-request. */
-  apiVersion?: 'stable' | 'beta';
+  betaApis?: string[];
 }
 
 /**
@@ -51,7 +51,7 @@ interface ClaudeHelperParamsBase {
   name: string;
   client: Anthropic;
   cacheSystemPrompt?: boolean;
-  defaultApiVersion?: 'stable' | 'beta';
+  defaultBetaApis?: string[];
 }
 
 /**
@@ -63,6 +63,29 @@ export interface ClaudeModelParams extends ClaudeHelperParamsBase {}
  * Parameters for creating a Claude runner.
  */
 export interface ClaudeRunnerParams extends ClaudeHelperParamsBase {}
+
+export const AnthropicBetaApis = {
+  // messageBatches: 'message-batches-2024-09-24',
+  // promptCaching: 'prompt-caching-2024-07-31',
+  // computerUse: 'computer-use-2025-01-24',
+  pdfs: 'pdfs-2024-09-25',
+  // tokenCounting: 'token-counting-2024-11-01',
+  // tokenEfficientTools: 'token-efficient-tools-2025-02-19',
+  // output128k: 'output-128k-2025-02-19',
+  filesApi: 'files-api-2025-04-14',
+  // mcpClient: 'mcp-client-2025-04-04',
+  // devFullThinking: 'dev-full-thinking-2025-05-14',
+  // interleavedThinking: 'interleaved-thinking-2025-05-14',
+  // codeExecution: 'code-execution-2025-05-22',
+  // extendedCacheTtl: 'extended-cache-ttl-2025-04-11',
+  // context1m: 'context-1m-2025-08-07',
+  // contextManagement: 'context-management-2025-06-27',
+  // modelContextWindowExceeded: 'model-context-window-exceeded-2025-08-26',
+  // skills: 'skills-2025-10-02',
+  // effortParam: 'effort-param-2025-11-24',
+  // advancedToolUse: 'advanced-tool-use-2025-11-20',
+  // structuredOutputs: 'structured-outputs-2025-11-13',
+} as const;
 
 export const AnthropicBaseConfigSchema = GenerationCommonConfigSchema.extend({
   tool_choice: z
@@ -84,8 +107,27 @@ export const AnthropicBaseConfigSchema = GenerationCommonConfigSchema.extend({
       user_id: z.string().optional(),
     })
     .optional(),
-  /** Optional shorthand to pick API surface for this request. */
-  apiVersion: z.enum(['stable', 'beta']).optional(),
+  beta: z.object({
+    enabled: z.boolean().optional(),
+    // messageBatches: z.boolean().optional(),
+    // promptCaching: z.boolean().optional(),
+    // computerUse: z.boolean().optional(),
+    pdfs: z.boolean().optional(),
+    // tokenCounting: z.boolean().optional(),
+    // tokenEfficientTools: z.boolean().optional(),
+    // output128k: z.boolean().optional(),
+    filesApi: z.boolean().optional(),
+    // mcpClient: z.boolean().optional(),
+    // devFullThinking: z.boolean().optional(),
+    // interleavedThinking: z.boolean().optional(),
+    // codeExecution: z.boolean().optional(),
+    // extendedCacheTtl: z.boolean().optional(),
+    // context1m: z.boolean().optional(),
+    // contextManagement: z.boolean().optional(),
+    // modelContextWindowExceeded: z.boolean().optional(),
+    // skills: z.boolean().optional(),
+    apis: z.array(z.string()).optional(),
+  }).optional(),
 });
 
 export type AnthropicBaseConfigSchemaType = typeof AnthropicBaseConfigSchema;
@@ -156,11 +198,12 @@ export const MEDIA_TYPES = {
  */
 export function resolveBetaEnabled(
   cfg: AnthropicThinkingConfig | AnthropicBaseConfig | undefined,
-  pluginDefaultApiVersion?: 'stable' | 'beta'
+  pluginDefaultBetaApis?: string[]
 ): boolean {
-  if (cfg?.apiVersion !== undefined) {
-    return cfg.apiVersion === 'beta';
-  }
-  if (pluginDefaultApiVersion === 'beta') return true;
-  return false;
+  return true;
+  // if (cfg?.beta !== undefined) {
+  //   return cfg.beta.enabled ?? false;
+  // }
+
+  // return (pluginDefaultBetaApis?.length ?? 0) > 0;
 }

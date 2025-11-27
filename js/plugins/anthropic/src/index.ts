@@ -91,7 +91,7 @@ function getAnthropicClient(options?: PluginOptions): Anthropic {
  */
 function anthropicPlugin(options?: PluginOptions): GenkitPluginV2 {
   const client = getAnthropicClient(options);
-  const defaultApiVersion = options?.apiVersion;
+  const defaultBetaApis = options?.betaApis;
 
   let listActionsCache: ActionMetadata[] | null = null;
 
@@ -104,7 +104,7 @@ function anthropicPlugin(options?: PluginOptions): GenkitPluginV2 {
           name,
           client,
           cacheSystemPrompt: options?.cacheSystemPrompt,
-          defaultApiVersion,
+          defaultBetaApis,
         });
         actions.push(action);
       }
@@ -118,7 +118,7 @@ function anthropicPlugin(options?: PluginOptions): GenkitPluginV2 {
           name: modelName,
           client,
           cacheSystemPrompt: options?.cacheSystemPrompt,
-          defaultApiVersion,
+          defaultBetaApis,
         });
       }
       return undefined;
