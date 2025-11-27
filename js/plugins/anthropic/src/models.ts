@@ -135,14 +135,12 @@ export function claudeRunner<TConfigSchema extends z.ZodTypeAny>(
   params: ClaudeRunnerParams,
   configSchema: TConfigSchema
 ) {
-  const { defaultApiVersion, ...runnerParams } = params;
+  console.log('claudeRunner', params);
+  const { defaultBetaApis, ...runnerParams } = params;
 
   if (!runnerParams.client) {
     throw new Error('Anthropic client is required to create a runner');
   }
-
-  let stableRunner: Runner | null = null;
-  let betaRunner: BetaRunner | null = null;
 
   return async (
     request: GenerateRequest<TConfigSchema>,
@@ -162,11 +160,11 @@ export function claudeRunner<TConfigSchema extends z.ZodTypeAny>(
     >;
     const isBeta = resolveBetaEnabled(
       normalizedRequest.config,
-      defaultApiVersion
+      defaultBetaApis
     );
     const runner = isBeta
-      ? (betaRunner ??= new BetaRunner(runnerParams))
-      : (stableRunner ??= new Runner(runnerParams));
+      ? new BetaRunner(runnerParams)
+      : new Runner(runnerParams);
     return runner.run(normalizedRequest, {
       streamingRequested,
       sendChunk,
@@ -213,7 +211,7 @@ export function claudeModel(
     name,
     client: runnerClient,
     cacheSystemPrompt: cachePrompt,
-    defaultApiVersion: apiVersion,
+    defaultBetaApis: betaApis,
   } = params;
   // Use supported model ref if available, otherwise create generic model ref
   const modelRef = KNOWN_CLAUDE_MODELS[name];
@@ -226,14 +224,14 @@ export function claudeModel(
     {
       name: `anthropic/${name}`,
       ...modelInfo,
-      configSchema: configSchema,
+      configSchema,
     },
     claudeRunner(
       {
         name,
         client: runnerClient,
         cacheSystemPrompt: cachePrompt,
-        defaultApiVersion: apiVersion,
+        defaultBetaApis: betaApis,
       },
       configSchema
     )
