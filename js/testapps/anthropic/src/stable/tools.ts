@@ -40,11 +40,11 @@ const getWeather = ai.defineTool(
   },
 );
 
-ai.defineFlow('anthropic-stable-tools', async () => {
+ai.defineFlow('anthropic-stable-tools', async ({ place }) => {
   const { text } = await ai.generate({
     model: anthropic.model('claude-sonnet-4-5'),
     tools: [getWeather],
-    prompt: 'What is the weather in Paris?',
+    prompt: `What is the weather in ${place}?`,
   });
 
   return text;
