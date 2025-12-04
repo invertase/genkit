@@ -15,12 +15,11 @@
  */
 
 import { anthropic } from '@genkit-ai/anthropic';
-import { genkit } from 'genkit';
-import * as fs from 'fs';
-import fetch from 'node-fetch';
 import FormData from 'form-data';
+import * as fs from 'fs';
+import { genkit } from 'genkit';
+import fetch from 'node-fetch';
 import * as path from 'path';
-import { url } from 'inspector';
 
 // Ensure the API key is set.
 const API_KEY = process.env.ANTHROPIC_API_KEY;
@@ -65,7 +64,7 @@ async function main() {
       // Default all flows in this sample to the beta surface
       anthropic({
         apiVersion: 'beta',
-        apiKey: API_KEY
+        apiKey: API_KEY,
       }),
     ],
   });
@@ -111,7 +110,7 @@ async function main() {
   });
 }
 
-main().catch(error => {
+main().catch((error) => {
   console.error('Error:', error);
   process.exit(1);
 });
