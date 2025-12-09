@@ -303,18 +303,6 @@ export class BetaRunner extends BaseRunner<BetaRunnerTypes> {
       request.config?.thinking
     ) as BetaMessageCreateParams['thinking'] | undefined;
 
-    // Need to extract topP and topK from request.config to avoid duplicate properties being added to the body
-    // This happens because topP and topK have different property names (top_p and top_k) in the Anthropic API.
-    // Thinking is extracted separately to avoid type issues.
-    // ApiVersion is extracted separately as it's not a valid property for the Anthropic API.
-    const {
-      topP,
-      topK,
-      apiVersion: _,
-      thinking: defaultThinkingConfig,
-      ...restConfig
-    } = request.config ?? {};
-
     const body: BetaMessageCreateParamsNonStreaming = {
       model: mappedModelName,
       max_tokens:
@@ -323,13 +311,13 @@ export class BetaRunner extends BaseRunner<BetaRunnerTypes> {
       system: betaSystem,
       stop_sequences: request.config?.stopSequences,
       temperature: request.config?.temperature,
-      top_k: topK,
-      top_p: topP,
+      top_k: request.config?.topK,
+      top_p: request.config?.topP,
       tool_choice: request.config?.tool_choice,
       metadata: request.config?.metadata,
       tools: request.tools?.map((tool) => this.toAnthropicTool(tool)),
       thinking:
-        (defaultThinkingConfig as BetaMessageCreateParams['thinking']) ??
+        (request.config?.thinking as BetaMessageCreateParams['thinking']) ??
         thinkingConfig,
       output_format: this.isStructuredOutputEnabled(request)
         ? {
@@ -337,10 +325,10 @@ export class BetaRunner extends BaseRunner<BetaRunnerTypes> {
             schema: toAnthropicSchema(request.output!.schema!),
           }
         : undefined,
-      betas: Array.isArray(request.config?.betas)
-        ? [...(request.config?.betas ?? [])]
+      betas: Array.isArray(request.config?.additional?.betas)
+        ? [...(request.config?.additional?.betas ?? [])]
         : [...BETA_APIS],
-      ...restConfig,
+      ...(request.config?.additional ?? {}),
     };
 
     return body;
@@ -376,18 +364,6 @@ export class BetaRunner extends BaseRunner<BetaRunnerTypes> {
       request.config?.thinking
     ) as BetaMessageCreateParams['thinking'] | undefined;
 
-    // Need to extract topP and topK from request.config to avoid duplicate properties being added to the body
-    // This happens because topP and topK have different property names (top_p and top_k) in the Anthropic API.
-    // Thinking is extracted separately to avoid type issues.
-    // ApiVersion is extracted separately as it's not a valid property for the Anthropic API.
-    const {
-      topP,
-      topK,
-      apiVersion: _,
-      thinking: defaultThinkingConfig,
-      ...restConfig
-    } = request.config ?? {};
-
     const body: BetaMessageCreateParamsStreaming = {
       model: mappedModelName,
       max_tokens:
@@ -397,13 +373,13 @@ export class BetaRunner extends BaseRunner<BetaRunnerTypes> {
       system: betaSystem,
       stop_sequences: request.config?.stopSequences,
       temperature: request.config?.temperature,
-      top_k: topK,
-      top_p: topP,
+      top_k: request.config?.topK,
+      top_p: request.config?.topP,
       tool_choice: request.config?.tool_choice,
       metadata: request.config?.metadata,
       tools: request.tools?.map((tool) => this.toAnthropicTool(tool)),
       thinking:
-        (defaultThinkingConfig as BetaMessageCreateParams['thinking']) ??
+        (request.config?.thinking as BetaMessageCreateParams['thinking']) ??
         thinkingConfig,
       output_format: this.isStructuredOutputEnabled(request)
         ? {
@@ -411,10 +387,10 @@ export class BetaRunner extends BaseRunner<BetaRunnerTypes> {
             schema: toAnthropicSchema(request.output!.schema!),
           }
         : undefined,
-      betas: Array.isArray(request.config?.betas)
-        ? [...(request.config?.betas ?? [])]
+      betas: Array.isArray(request.config?.additional?.betas)
+        ? [...(request.config?.additional?.betas ?? [])]
         : [...BETA_APIS],
-      ...restConfig,
+      ...(request.config?.additional ?? {}),
     };
 
     return body;

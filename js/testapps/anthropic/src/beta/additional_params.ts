@@ -37,11 +37,12 @@ ai.defineFlow('anthropic-beta-additional-params', async () => {
       'You are Claude on the beta API. Provide a concise greeting that mentions that you are using the beta API.',
     config: {
       temperature: 0.6,
-      // Additional param (not directly supported by the plugin, but can be passed through to the API)
-      betas: ['effort-2025-11-24'],
-      // Additional param (not directly supported by the plugin, but can be passed through to the API)
-      output_config: {
-        effort: 'medium',
+      // Additional param to include params that are not directly supported by the plugin, but are supported by the Anthropic API
+      additional: {
+        betas: ['effort-2025-11-24'],
+        output_config: {
+          effort: 'medium',
+        },
       },
     },
   });
@@ -61,11 +62,12 @@ ai.defineFlow(
       ],
       config: {
         temperature: 0.4,
-        // Additional param (not directly supported by the plugin, but can be passed through to the API)
-        betas: ['effort-2025-11-24'],
-        // Additional param (not directly supported by the plugin, but can be passed through to the API)
-        output_config: {
-          effort: 'medium',
+        // Additional param to include params that are not directly supported by the plugin, but are supported by the Anthropic API
+        additional: {
+          betas: ['effort-2025-11-24'],
+          output_config: {
+            effort: 'medium',
+          },
         },
       },
     });

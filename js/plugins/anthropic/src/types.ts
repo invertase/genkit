@@ -102,6 +102,13 @@ export const AnthropicBaseConfigSchema = GenerationCommonConfigSchema.extend({
     .describe(
       'The API version to use for the request. Both stable and beta features are available on the beta API surface.'
     ),
+  additional: z
+    .object({})
+    .passthrough()
+    .optional()
+    .describe(
+      'Additional parameters to pass to the API. This can be used to pass through parameters that are not directly supported by the plugin, but are supported by the Anthropic API.'
+    ),
 }).passthrough();
 
 export type AnthropicBaseConfigSchemaType = typeof AnthropicBaseConfigSchema;
