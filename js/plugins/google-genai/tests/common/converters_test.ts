@@ -115,6 +115,53 @@ describe('toGeminiMessage', () => {
     },
     {
       should:
+        'should transform genkit message (tool response with media content) correctly',
+      inputMessage: {
+        role: 'tool',
+        content: [
+          {
+            toolResponse: {
+              name: 'screenshot',
+              output: 'success',
+              ref: '0',
+              content: [
+                {
+                  media: {
+                    contentType: 'image/png',
+                    url: 'data:image/png;base64,SHORTENED_BASE64_DATA',
+                  },
+                },
+              ],
+            },
+          },
+        ],
+      },
+      expectedOutput: {
+        role: 'function',
+        parts: [
+          {
+            functionResponse: {
+              id: '0',
+              name: 'screenshot',
+              response: {
+                name: 'screenshot',
+                content: 'success',
+              },
+              parts: [
+                {
+                  inlineData: {
+                    mimeType: 'image/png',
+                    data: 'SHORTENED_BASE64_DATA',
+                  },
+                },
+              ],
+            },
+          },
+        ],
+      },
+    },
+    {
+      should:
         'should transform genkit message (inline base64 image content) correctly',
       inputMessage: {
         role: 'user',
@@ -124,6 +171,11 @@ describe('toGeminiMessage', () => {
             media: {
               contentType: 'image/jpeg',
               url: 'data:image/jpeg;base64,SHORTENED_BASE64_DATA',
+            },
+            metadata: {
+              mediaResolution: {
+                level: 'MEDIA_RESOLUTION_HIGH',
+              },
             },
           },
         ],
@@ -136,6 +188,9 @@ describe('toGeminiMessage', () => {
             inlineData: {
               mimeType: 'image/jpeg',
               data: 'SHORTENED_BASE64_DATA',
+            },
+            mediaResolution: {
+              level: 'MEDIA_RESOLUTION_HIGH',
             },
           },
         ],

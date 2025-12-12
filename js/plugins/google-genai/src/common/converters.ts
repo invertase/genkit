@@ -134,6 +134,11 @@ function toGeminiMedia(part: Part): GeminiPart {
     media.videoMetadata = { ...videoMetadata };
   }
 
+  // Media resolution
+  if (part.metadata?.mediaResolution) {
+    media.mediaResolution = { ...part.metadata.mediaResolution };
+  }
+
   return maybeAddGeminiThoughtSignature(part, media);
 }
 
@@ -162,6 +167,9 @@ function toGeminiToolResponse(part: Part): GeminiPart {
       content: part.toolResponse.output,
     },
   };
+  if (part.toolResponse.content) {
+    functionResponse.parts = part.toolResponse.content.map(toGeminiPart);
+  }
   if (part.toolResponse.ref) {
     functionResponse.id = part.toolResponse.ref;
   }
