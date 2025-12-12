@@ -153,6 +153,10 @@ importers:
       zod-to-json-schema:
         specifier: ^3.22.4
         version: 3.24.5(zod@3.25.67)
+    optionalDependencies:
+      '@genkit-ai/firebase':
+        specifier: ^1.16.1
+        version: 1.16.1(@google-cloud/firestore@7.11.1(encoding@0.1.13))(encoding@0.1.13)(firebase-admin@13.4.0(encoding@0.1.13))(firebase@11.9.1)(genkit@1.24.0(@google-cloud/firestore@7.11.1(encoding@0.1.13))(encoding@0.1.13)(firebase-admin@13.4.0(encoding@0.1.13))(firebase@11.9.1))
     devDependencies:
       '@types/express':
         specifier: ^4.17.21
@@ -178,10 +182,6 @@ importers:
       typescript:
         specifier: ^4.9.0
         version: 4.9.5
-    optionalDependencies:
-      '@genkit-ai/firebase':
-        specifier: ^1.16.1
-        version: 1.16.1(@google-cloud/firestore@7.11.1(encoding@0.1.13))(encoding@0.1.13)(firebase-admin@13.4.0(encoding@0.1.13))(firebase@11.9.1)(genkit@1.24.0(@google-cloud/firestore@7.11.1(encoding@0.1.13))(encoding@0.1.13)(firebase-admin@13.4.0(encoding@0.1.13))(firebase@11.9.1))
 
   doc-snippets:
     dependencies:
@@ -260,8 +260,8 @@ importers:
   plugins/anthropic:
     dependencies:
       '@anthropic-ai/sdk':
-        specifier: ^0.68.0
-        version: 0.68.0(zod@3.25.67)
+        specifier: ^0.71.2
+        version: 0.71.2(zod@3.25.67)
     devDependencies:
       '@types/node':
         specifier: ^20.11.16
@@ -986,6 +986,13 @@ importers:
       openai:
         specifier: ^4.52.7
         version: 4.104.0(encoding@0.1.13)(ws@8.18.3)(zod@3.25.67)
+    optionalDependencies:
+      '@google-cloud/bigquery':
+        specifier: ^7.8.0
+        version: 7.9.4(encoding@0.1.13)
+      firebase-admin:
+        specifier: '>=12.2'
+        version: 13.4.0(encoding@0.1.13)
     devDependencies:
       '@types/node':
         specifier: ^20.11.16
@@ -1017,13 +1024,6 @@ importers:
       typescript:
         specifier: ^4.9.0
         version: 4.9.5
-    optionalDependencies:
-      '@google-cloud/bigquery':
-        specifier: ^7.8.0
-        version: 7.9.4(encoding@0.1.13)
-      firebase-admin:
-        specifier: '>=12.2'
-        version: 13.4.0(encoding@0.1.13)
 
   testapps/anthropic:
     dependencies:
@@ -2092,8 +2092,8 @@ packages:
   '@anthropic-ai/sdk@0.24.3':
     resolution: {integrity: sha512-916wJXO6T6k8R6BAAcLhLPv/pnLGy7YSEBZXZ1XTFbLcTZE8oTy3oDW9WJf9KKZwMvVcePIfoTSvzXHRcGxkQQ==}
 
-  '@anthropic-ai/sdk@0.68.0':
-    resolution: {integrity: sha512-SMYAmbbiprG8k1EjEPMTwaTqssDT7Ae+jxcR5kWXiqTlbwMR2AthXtscEVWOHkRfyAV5+y3PFYTJRNa3OJWIEw==}
+  '@anthropic-ai/sdk@0.71.2':
+    resolution: {integrity: sha512-TGNDEUuEstk/DKu0/TflXAEt+p+p/WhTlFzEnoosvbaDU2LTjm42igSdlL0VijrKpWejtOKxX0b8A7uc+XiSAQ==}
     hasBin: true
     peerDependencies:
       zod: ^3.25.0 || ^4.0.0
@@ -7931,7 +7931,7 @@ snapshots:
     transitivePeerDependencies:
       - encoding
 
-  '@anthropic-ai/sdk@0.68.0(zod@3.25.67)':
+  '@anthropic-ai/sdk@0.71.2(zod@3.25.67)':
     dependencies:
       json-schema-to-ts: 3.1.1
     optionalDependencies:
