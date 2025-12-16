@@ -45,6 +45,7 @@ import { AnthropicConfigSchema, type ClaudeRunnerParams } from '../types.js';
 import { removeUndefinedProperties } from '../utils.js';
 import { BaseRunner } from './base.js';
 import { RunnerTypes as BaseRunnerTypes } from './types.js';
+import { ToolWhat, ToolWhen } from '../tools/tool.js';
 
 interface RunnerTypes extends BaseRunnerTypes {
   Message: Message;
@@ -332,6 +333,7 @@ export class Runner extends BaseRunner<RunnerTypes> {
   protected fromAnthropicContentBlockChunk(
     event: MessageStreamEvent
   ): Part | undefined {
+    console.log('event type: ', event.type);
     // Handle content_block_delta events
     if (event.type === 'content_block_delta') {
       const delta = event.delta;
@@ -357,11 +359,11 @@ export class Runner extends BaseRunner<RunnerTypes> {
     // Handle content_block_start events
     if (event.type === 'content_block_start') {
       const block = event.content_block;
+      console.log('block type: ', block.type);
 
       switch (block.type) {
         case 'server_tool_use':
           return {
-            text: `[Anthropic server tool ${block.name}] input: ${JSON.stringify(block.input)}`,
             custom: {
               anthropicServerToolUse: {
                 id: block.id,
@@ -370,13 +372,6 @@ export class Runner extends BaseRunner<RunnerTypes> {
               },
             },
           };
-
-        case 'web_search_tool_result':
-          return this.toWebSearchToolResultPart({
-            type: block.type,
-            toolUseId: block.tool_use_id,
-            content: block.content,
-          });
 
         case 'text':
           return { text: block.text };
@@ -397,6 +392,8 @@ export class Runner extends BaseRunner<RunnerTypes> {
           };
 
         default: {
+          // TODO: Check if a tool can handle this
+
           const unknownType = (block as { type: string }).type;
           logger.warn(
             `Unexpected Anthropic content block type in stream: ${unknownType}. Returning undefined. Content block: ${JSON.stringify(block)}`
@@ -411,10 +408,14 @@ export class Runner extends BaseRunner<RunnerTypes> {
   }
 
   protected fromAnthropicContentBlock(contentBlock: ContentBlock): Part {
+    console.log('contentBlock type: ', contentBlock.type);
     switch (contentBlock.type) {
       case 'server_tool_use':
+        const tool = this.findSupportedServerToolByServerToolName(contentBlock.name);
+        if (tool) {
+          return tool.fromAnthropicServerToolUseContentBlock(contentBlock);
+        }
         return {
-          text: `[Anthropic server tool ${contentBlock.name}] input: ${JSON.stringify(contentBlock.input)}`,
           custom: {
             anthropicServerToolUse: {
               id: contentBlock.id,
@@ -423,13 +424,6 @@ export class Runner extends BaseRunner<RunnerTypes> {
             },
           },
         };
-
-      case 'web_search_tool_result':
-        return this.toWebSearchToolResultPart({
-          type: contentBlock.type,
-          toolUseId: contentBlock.tool_use_id,
-          content: contentBlock.content,
-        });
 
       case 'tool_use':
         return {
@@ -453,6 +447,12 @@ export class Runner extends BaseRunner<RunnerTypes> {
         return { custom: { redactedThinking: contentBlock.data } };
 
       default: {
+        // Check if a tool can handle this
+        const toolAbility = this.findSupportedServerToolAbility(ToolWhen.NonStream, ToolWhat.ContentBlock, contentBlock.type)
+        if (toolAbility) {
+          return toolAbility.function(contentBlock);
+        }
+
         const unknownType = (contentBlock as { type: string }).type;
         logger.warn(
           `Unexpected Anthropic content block type: ${unknownType}. Returning empty text. Content block: ${JSON.stringify(contentBlock)}`
@@ -493,6 +493,9 @@ export class Runner extends BaseRunner<RunnerTypes> {
               this.fromAnthropicContentBlock(block)
             ),
           },
+          custom: {
+            citationMetadata: this.fromAnthropicCitations(response.content),
+          }
         },
       ],
       usage: {

@@ -27,6 +27,7 @@ import type {
 import { Message as GenkitMessage } from 'genkit';
 import type { ToolDefinition } from 'genkit/model';
 
+import { Ability, Tool, ToolWhat, ToolWhen } from '../tools/tool.js';
 import {
   AnthropicConfigSchema,
   Media,
@@ -63,6 +64,7 @@ export abstract class BaseRunner<ApiTypes extends RunnerTypes> {
   protected name: string;
   protected client: Anthropic;
   protected cacheSystemPrompt?: boolean;
+  protected supportedTools: Tool[] = [];
 
   /**
    * Default maximum output tokens for Claude models when not specified in the request.
@@ -363,24 +365,6 @@ export abstract class BaseRunner<ApiTypes extends RunnerTypes> {
     return undefined;
   }
 
-  protected toWebSearchToolResultPart(params: {
-    toolUseId: string;
-    content: unknown;
-    type: string;
-  }): Part {
-    const { toolUseId, content, type } = params;
-    return {
-      text: `[Anthropic server tool result ${toolUseId}] ${JSON.stringify(content)}`,
-      custom: {
-        anthropicServerToolResult: {
-          type,
-          toolUseId,
-          content,
-        },
-      },
-    };
-  }
-
   /**
    * Converts a Genkit Part to the corresponding Anthropic content block.
    * Each runner implements this to return its specific API type.
@@ -462,6 +446,18 @@ export abstract class BaseRunner<ApiTypes extends RunnerTypes> {
       input_schema: tool.inputSchema,
     } as RunnerTool<ApiTypes>;
   }
+
+  protected findSupportedServerToolAbility(when: typeof ToolWhen, what: typeof ToolWhat, id: string): Ability | undefined {
+    for (const tool of this.supportedTools) {
+      for (const ability of tool.abilities) {
+        if (ability.when === when && ability.what === what && ability.id === id) {
+          return ability;
+        }
+      }
+    }
+    return undefined;
+  }
+
 
   /**
    * Converts an Anthropic request to a non-streaming Anthropic API request body.

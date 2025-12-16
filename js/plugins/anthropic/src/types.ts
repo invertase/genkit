@@ -168,6 +168,18 @@ export const MEDIA_TYPES = {
 } as const satisfies Record<string, MediaType>;
 
 /**
+ * Source attributions for content.
+ */
+export declare interface CitationSource {
+  /** Optional. Start index into the content. */
+  startIndex?: number;
+  /** Optional. End index into the content. */
+  endIndex?: number;
+  /** Optional. Url reference of the attribution. */
+  uri?: string;
+}
+
+/**
  * Resolve whether beta API should be used for this call.
  * Priority:
  *   1. request.config.apiVersion (per-request override - explicit stable or beta)
