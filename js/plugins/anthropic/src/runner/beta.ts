@@ -43,7 +43,16 @@ import type {
 import { logger } from 'genkit/logging';
 
 import { KNOWN_CLAUDE_MODELS, extractVersion } from '../models.js';
+import { McpToolUsePart } from '../parts/mcp_tool_use.js';
+import { SupportedPartWhat, SupportedPartWhen } from '../parts/part.js';
+import { RedactedThinkingPart } from '../parts/redacted_thinking_part.js';
+import { ServerToolUsePart } from '../parts/server_tool_use_part.js';
+import { TextPart } from '../parts/text_part.js';
+import { ThinkingPart } from '../parts/thinking_part.js';
+import { ToolUsePart } from '../parts/tool_use_part.js';
+import { WebSearchToolResultPart } from '../parts/web_search_tool_result_part.js';
 import { AnthropicConfigSchema, type ClaudeRunnerParams } from '../types.js';
+import { unsupportedBetaServerToolError } from '../utils.js';
 import { BaseRunner } from './base.js';
 import { RunnerTypes } from './types.js';
 
@@ -65,9 +74,6 @@ const BETA_UNSUPPORTED_SERVER_TOOL_BLOCK_TYPES = new Set<string>([
   'mcp_tool_use',
   'container_upload',
 ]);
-
-const unsupportedServerToolError = (blockType: string): string =>
-  `Anthropic beta runner does not yet support server-managed tool block '${blockType}'. Please retry against the stable API or wait for dedicated support.`;
 
 interface BetaRunnerTypes extends RunnerTypes {
   Message: BetaMessage;
@@ -94,6 +100,16 @@ interface BetaRunnerTypes extends RunnerTypes {
 export class BetaRunner extends BaseRunner<BetaRunnerTypes> {
   constructor(params: ClaudeRunnerParams) {
     super(params);
+
+    this.supportedParts = [
+      RedactedThinkingPart,
+      ServerToolUsePart,
+      TextPart,
+      ThinkingPart,
+      ToolUsePart,
+      WebSearchToolResultPart,
+      McpToolUsePart,
+    ];
   }
 
   /**
@@ -367,7 +383,7 @@ export class BetaRunner extends BaseRunner<BetaRunnerTypes> {
           message: {
             role: 'model',
             content: message.content.map((block) =>
-              this.fromBetaContentBlock(block)
+              this.fromAnthropicContentBlock(block)
             ),
           },
         },
@@ -387,9 +403,9 @@ export class BetaRunner extends BaseRunner<BetaRunnerTypes> {
         blockType &&
         BETA_UNSUPPORTED_SERVER_TOOL_BLOCK_TYPES.has(blockType)
       ) {
-        throw new Error(unsupportedServerToolError(blockType));
+        throw new Error(unsupportedBetaServerToolError(blockType));
       }
-      return this.fromBetaContentBlock(event.content_block);
+      return this.fromAnthropicContentBlock(event.content_block);
     }
     if (event.type === 'content_block_delta') {
       if (event.delta.type === 'text_delta') {
@@ -404,71 +420,26 @@ export class BetaRunner extends BaseRunner<BetaRunnerTypes> {
     return undefined;
   }
 
-  private fromBetaContentBlock(contentBlock: BetaContentBlock): Part {
-    switch (contentBlock.type) {
-      case 'tool_use': {
-        return {
-          toolRequest: {
-            ref: contentBlock.id,
-            name: contentBlock.name ?? 'unknown_tool',
-            input: contentBlock.input,
-          },
-        };
-      }
-
-      case 'mcp_tool_use':
-        throw new Error(unsupportedServerToolError(contentBlock.type));
-
-      case 'server_tool_use': {
-        const baseName = contentBlock.name ?? 'unknown_tool';
-        const serverToolName =
-          'server_name' in contentBlock && contentBlock.server_name
-            ? `${contentBlock.server_name}/${baseName}`
-            : baseName;
-        return {
-          text: `[Anthropic server tool ${serverToolName}] input: ${JSON.stringify(contentBlock.input)}`,
-          custom: {
-            anthropicServerToolUse: {
-              id: contentBlock.id,
-              name: serverToolName,
-              input: contentBlock.input,
-            },
-          },
-        };
-      }
-
-      case 'web_search_tool_result':
-        return this.toWebSearchToolResultPart({
-          type: contentBlock.type,
-          toolUseId: contentBlock.tool_use_id,
-          content: contentBlock.content,
-        });
-
-      case 'text':
-        return { text: contentBlock.text };
-
-      case 'thinking':
-        return this.createThinkingPart(
-          contentBlock.thinking,
-          contentBlock.signature
-        );
-
-      case 'redacted_thinking':
-        return { custom: { redactedThinking: contentBlock.data } };
-
-      default: {
-        if (BETA_UNSUPPORTED_SERVER_TOOL_BLOCK_TYPES.has(contentBlock.type)) {
-          throw new Error(unsupportedServerToolError(contentBlock.type));
-        }
-        const unknownType = (contentBlock as { type: string }).type;
-        logger.warn(
-          `Unexpected Anthropic beta content block type: ${unknownType}. Returning empty text. Content block: ${JSON.stringify(
-            contentBlock
-          )}`
-        );
-        return { text: '' };
-      }
+  override fromAnthropicContentBlock(contentBlock: BetaContentBlock): Part {
+    const foundSupportedPartAbility = this.findSupportedPartAbility(
+      contentBlock.type,
+      SupportedPartWhen.NonStream,
+      SupportedPartWhat.ContentBlock
+    );
+    if (foundSupportedPartAbility) {
+      return foundSupportedPartAbility.func(contentBlock);
     }
+
+    if (BETA_UNSUPPORTED_SERVER_TOOL_BLOCK_TYPES.has(contentBlock.type)) {
+      throw new Error(unsupportedBetaServerToolError(contentBlock.type));
+    }
+    const unknownType = (contentBlock as { type: string }).type;
+    logger.warn(
+      `Unexpected Anthropic beta content block type: ${unknownType}. Returning empty text. Content block: ${JSON.stringify(
+        contentBlock
+      )}`
+    );
+    return { text: '' };
   }
 
   private fromBetaStopReason(
