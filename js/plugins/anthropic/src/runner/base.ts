@@ -15,7 +15,10 @@
  */
 
 import { Anthropic } from '@anthropic-ai/sdk';
-import type { DocumentBlockParam } from '@anthropic-ai/sdk/resources/messages';
+import type {
+  DocumentBlockParam,
+  MessageStreamEvent,
+} from '@anthropic-ai/sdk/resources/messages';
 import type {
   GenerateRequest,
   GenerateResponseChunkData,
@@ -27,6 +30,18 @@ import type {
 import { Message as GenkitMessage } from 'genkit';
 import type { ToolDefinition } from 'genkit/model';
 
+import { ContentBlock } from '@anthropic-ai/sdk/resources';
+import {
+  BetaContentBlock,
+  BetaRawMessageStreamEvent,
+} from '@anthropic-ai/sdk/resources/beta.js';
+import { logger } from 'genkit/logging';
+import {
+  Ability,
+  SupportedPart as PluginPart,
+  SupportedPartWhat,
+  SupportedPartWhen,
+} from '../parts/part.js';
 import {
   AnthropicConfigSchema,
   Media,
@@ -36,7 +51,6 @@ import {
   type ClaudeRunnerParams,
   type ThinkingConfig,
 } from '../types.js';
-
 import {
   RunnerContentBlockParam,
   RunnerMessage,
@@ -50,7 +64,7 @@ import {
   RunnerTypes,
 } from './types.js';
 
-const ANTHROPIC_THINKING_CUSTOM_KEY = 'anthropicThinking';
+export const ANTHROPIC_THINKING_CUSTOM_KEY = 'anthropicThinking';
 
 /**
  * Shared runner logic for Anthropic SDK integrations.
@@ -63,6 +77,7 @@ export abstract class BaseRunner<ApiTypes extends RunnerTypes> {
   protected name: string;
   protected client: Anthropic;
   protected cacheSystemPrompt?: boolean;
+  protected supportedParts: PluginPart[] = [];
 
   /**
    * Default maximum output tokens for Claude models when not specified in the request.
@@ -298,23 +313,6 @@ export abstract class BaseRunner<ApiTypes extends RunnerTypes> {
     };
   }
 
-  protected createThinkingPart(thinking: string, signature?: string): Part {
-    const custom =
-      signature !== undefined
-        ? {
-            [ANTHROPIC_THINKING_CUSTOM_KEY]: { signature },
-          }
-        : undefined;
-    return custom
-      ? {
-          reasoning: thinking,
-          custom,
-        }
-      : {
-          reasoning: thinking,
-        };
-  }
-
   protected getThinkingSignature(part: Part): string | undefined {
     const custom = part.custom as Record<string, unknown> | undefined;
     const thinkingValue = custom?.[ANTHROPIC_THINKING_CUSTOM_KEY];
@@ -361,24 +359,6 @@ export abstract class BaseRunner<ApiTypes extends RunnerTypes> {
     }
 
     return undefined;
-  }
-
-  protected toWebSearchToolResultPart(params: {
-    toolUseId: string;
-    content: unknown;
-    type: string;
-  }): Part {
-    const { toolUseId, content, type } = params;
-    return {
-      text: `[Anthropic server tool result ${toolUseId}] ${JSON.stringify(content)}`,
-      custom: {
-        anthropicServerToolResult: {
-          type,
-          toolUseId,
-          content,
-        },
-      },
-    };
   }
 
   /**
@@ -452,6 +432,67 @@ export abstract class BaseRunner<ApiTypes extends RunnerTypes> {
     return { system, messages: anthropicMsgs };
   }
 
+  protected fromAnthropicContentBlockChunk(
+    event: MessageStreamEvent | BetaRawMessageStreamEvent
+  ): Part | undefined {
+    // Handle content_block_start events
+    if (event.type === 'content_block_start') {
+      const contentBlock = event.content_block;
+
+      const foundSupportedPartAbility = this.findSupportedPartAbility(
+        contentBlock.type,
+        SupportedPartWhen.StreamStart,
+        SupportedPartWhat.ContentBlock
+      );
+      if (foundSupportedPartAbility) {
+        return foundSupportedPartAbility.func(contentBlock);
+      }
+
+      const unknownType = (contentBlock as { type: string }).type;
+      logger.warn(
+        `Unexpected Anthropic content block type in stream: ${unknownType}. Returning undefined. Content block: ${JSON.stringify(contentBlock)}`
+      );
+      return undefined;
+    }
+
+    // Handle content_block_delta events
+    if (event.type === 'content_block_delta') {
+      const foundSupportedPartAbility = this.findSupportedPartAbility(
+        event.delta.type,
+        SupportedPartWhen.StreamDelta,
+        SupportedPartWhat.ContentBlock
+      );
+      if (foundSupportedPartAbility) {
+        return foundSupportedPartAbility.func(event.delta);
+      }
+
+      // signature_delta - ignore
+      return undefined;
+    }
+
+    // Other event types (message_start, message_delta, etc.) - ignore
+    return undefined;
+  }
+
+  protected fromAnthropicContentBlock(
+    contentBlock: ContentBlock | BetaContentBlock
+  ): Part {
+    const foundSupportedPartAbility = this.findSupportedPartAbility(
+      contentBlock.type,
+      SupportedPartWhen.NonStream,
+      SupportedPartWhat.ContentBlock
+    );
+    if (foundSupportedPartAbility) {
+      return foundSupportedPartAbility.func(contentBlock);
+    }
+
+    const unknownType = (contentBlock as { type: string }).type;
+    logger.warn(
+      `Unexpected Anthropic content block type: ${unknownType}. Returning empty text. Content block: ${JSON.stringify(contentBlock)}`
+    );
+    return { text: '' };
+  }
+
   /**
    * Converts a Genkit ToolDefinition to an Anthropic Tool object.
    */
@@ -461,6 +502,25 @@ export abstract class BaseRunner<ApiTypes extends RunnerTypes> {
       description: tool.description,
       input_schema: tool.inputSchema,
     } as RunnerTool<ApiTypes>;
+  }
+
+  protected findSupportedPartAbility(
+    type: string,
+    when: (typeof SupportedPartWhen)[keyof typeof SupportedPartWhen],
+    what: (typeof SupportedPartWhat)[keyof typeof SupportedPartWhat]
+  ): Ability | undefined {
+    for (const part of this.supportedParts) {
+      for (const ability of part.abilities) {
+        if (
+          ability.when === when &&
+          ability.what === what &&
+          ability.id === type
+        ) {
+          return ability;
+        }
+      }
+    }
+    return undefined;
   }
 
   /**
