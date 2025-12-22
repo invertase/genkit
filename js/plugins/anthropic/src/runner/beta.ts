@@ -340,7 +340,11 @@ export class BetaRunner extends BaseRunner<BetaRunnerTypes> {
         .metadata as BetaMessageCreateParams['metadata'];
     }
     if (request.tools) {
-      body.tools = request.tools.map((tool) => this.toAnthropicTool(tool));
+      const configTools = (request.config?.tools as BetaTool[]) ?? [];
+      body.tools = [
+        ...configTools,
+        ...request.tools.map((tool) => this.toAnthropicTool(tool)),
+      ];
     }
     const thinkingConfig = this.toAnthropicThinkingConfig(
       request.config?.thinking
@@ -411,7 +415,11 @@ export class BetaRunner extends BaseRunner<BetaRunnerTypes> {
         .metadata as BetaMessageCreateParams['metadata'];
     }
     if (request.tools) {
-      body.tools = request.tools.map((tool) => this.toAnthropicTool(tool));
+      const configTools = (request.config?.tools as BetaTool[]) ?? [];
+      body.tools = [
+        ...configTools,
+        ...request.tools.map((tool) => this.toAnthropicTool(tool)),
+      ];
     }
     const thinkingConfig = this.toAnthropicThinkingConfig(
       request.config?.thinking

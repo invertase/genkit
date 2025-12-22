@@ -77,7 +77,6 @@ function toWebSearchToolResultPart(params: {
 }): Part {
   const { toolUseId, content, type } = params;
   return {
-    text: `[Anthropic server tool result ${toolUseId}] ${JSON.stringify(content)}`,
     custom: {
       anthropicServerToolResult: {
         type,

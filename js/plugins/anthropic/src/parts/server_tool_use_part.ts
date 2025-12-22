@@ -45,7 +45,6 @@ export const ServerToolUsePart: SupportedPart = {
             : baseName;
 
         return {
-          text: `[Anthropic server tool ${serverToolName}] input: ${JSON.stringify(contentBlock.input)}`,
           custom: {
             anthropicServerToolUse: {
               id: contentBlock.id,
@@ -70,7 +69,6 @@ export const ServerToolUsePart: SupportedPart = {
           );
         }
         return {
-          text: `[Anthropic server tool ${contentBlock.name}] input: ${JSON.stringify(contentBlock.input)}`,
           custom: {
             anthropicServerToolUse: {
               id: contentBlock.id,
