@@ -126,9 +126,6 @@ function toAnthropicSchema(
   return out;
 }
 
-const unsupportedServerToolError = (blockType: string): string =>
-  `Anthropic beta runner does not yet support server-managed tool block '${blockType}'. Please retry against the stable API or wait for dedicated support.`;
-
 interface BetaRunnerTypes extends RunnerTypes {
   Message: BetaMessage;
   Stream: BetaMessageStream;
