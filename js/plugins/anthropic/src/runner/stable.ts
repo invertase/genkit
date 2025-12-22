@@ -223,7 +223,11 @@ export class Runner extends BaseRunner<RunnerTypes> {
     }
 
     if (request.tools) {
-      body.tools = request.tools.map((tool) => this.toAnthropicTool(tool));
+      const configTools = (request.config?.tools as Tool[]) ?? [];
+      body.tools = [
+        ...configTools,
+        ...request.tools.map((tool) => this.toAnthropicTool(tool)),
+      ];
     }
     if (request.config?.topK !== undefined) {
       body.top_k = request.config.topK;
@@ -294,7 +298,11 @@ export class Runner extends BaseRunner<RunnerTypes> {
     }
 
     if (request.tools) {
-      body.tools = request.tools.map((tool) => this.toAnthropicTool(tool));
+      const configTools = (request.config?.tools as Tool[]) ?? [];
+      body.tools = [
+        ...configTools,
+        ...request.tools.map((tool) => this.toAnthropicTool(tool)),
+      ];
     }
     if (request.config?.topK !== undefined) {
       body.top_k = request.config.topK;
