@@ -57,12 +57,12 @@ import {
   RunnerMessageParam,
   RunnerRequestBody,
   RunnerStream,
-  RunnerStreamEvent,
   RunnerStreamingRequestBody,
   RunnerTool,
   RunnerToolResponseContent,
   RunnerTypes,
 } from './types.js';
+import { unsupportedServerToolError } from '../utils.js';
 
 export const ANTHROPIC_THINKING_CUSTOM_KEY = 'anthropicThinking';
 
@@ -76,8 +76,10 @@ export const ANTHROPIC_THINKING_CUSTOM_KEY = 'anthropicThinking';
 export abstract class BaseRunner<ApiTypes extends RunnerTypes> {
   protected name: string;
   protected client: Anthropic;
+  protected isBeta?: boolean;
   protected cacheSystemPrompt?: boolean;
   protected supportedParts: PluginPart[] = [];
+  protected unsupportedServerToolBlockTypes: Set<string> = new Set();
 
   /**
    * Default maximum output tokens for Claude models when not specified in the request.
@@ -432,12 +434,17 @@ export abstract class BaseRunner<ApiTypes extends RunnerTypes> {
     return { system, messages: anthropicMsgs };
   }
 
-  protected fromAnthropicContentBlockChunk(
+  protected toGenkitPart(
     event: MessageStreamEvent | BetaRawMessageStreamEvent
   ): Part | undefined {
     // Handle content_block_start events
     if (event.type === 'content_block_start') {
       const contentBlock = event.content_block;
+      const contentBlockType = (event.content_block as { type?: string }).type;
+
+      if (contentBlockType && this.unsupportedServerToolBlockTypes.has(contentBlockType)) {
+        throw new Error(unsupportedServerToolError(contentBlockType, this.isBeta ?? false));
+      }
 
       const foundSupportedPartAbility = this.findSupportedPartAbility(
         contentBlock.type,
@@ -448,9 +455,8 @@ export abstract class BaseRunner<ApiTypes extends RunnerTypes> {
         return foundSupportedPartAbility.func(contentBlock);
       }
 
-      const unknownType = (contentBlock as { type: string }).type;
       logger.warn(
-        `Unexpected Anthropic content block type in stream: ${unknownType}. Returning undefined. Content block: ${JSON.stringify(contentBlock)}`
+        `Unexpected Anthropic content block type in stream: ${contentBlockType}. Returning undefined. Content block: ${JSON.stringify(contentBlock)}`
       );
       return undefined;
     }
@@ -565,10 +571,6 @@ export abstract class BaseRunner<ApiTypes extends RunnerTypes> {
     message: RunnerMessage<ApiTypes>
   ): GenerateResponseData;
 
-  protected abstract toGenkitPart(
-    event: RunnerStreamEvent<ApiTypes>
-  ): Part | undefined;
-
   public async run(
     request: GenerateRequest<typeof AnthropicConfigSchema>,
     options: {
@@ -587,7 +589,7 @@ export abstract class BaseRunner<ApiTypes extends RunnerTypes> {
       );
       const stream = this.streamMessages(body, abortSignal);
       for await (const event of stream) {
-        const part = this.toGenkitPart(event);
+        const part = this.toGenkitPart(event as MessageStreamEvent | BetaRawMessageStreamEvent);
         if (part) {
           sendChunk({
             index: 0,

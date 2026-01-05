@@ -14,5 +14,5 @@
  * limitations under the License.
  */
 
-export const unsupportedBetaServerToolError = (blockType: string): string =>
-  `Anthropic beta runner does not yet support server-managed tool block '${blockType}'. Please retry against the stable API or wait for dedicated support.`;
+export const unsupportedServerToolError = (blockType: string, isBeta: boolean): string =>
+  `Anthropic ${isBeta ? 'beta' : 'stable'} runner does not yet support server-managed tool block '${blockType}'.`;

@@ -16,7 +16,6 @@
 
 import { BetaMessageStream } from '@anthropic-ai/sdk/lib/BetaMessageStream.js';
 import type {
-  BetaContentBlock,
   BetaImageBlockParam,
   BetaMessage,
   MessageCreateParams as BetaMessageCreateParams,
@@ -40,11 +39,8 @@ import type {
   ModelResponseData,
   Part,
 } from 'genkit';
-import { logger } from 'genkit/logging';
 
 import { KNOWN_CLAUDE_MODELS, extractVersion } from '../models.js';
-import { McpToolUsePart } from '../parts/mcp_tool_use.js';
-import { SupportedPartWhat, SupportedPartWhen } from '../parts/part.js';
 import { RedactedThinkingPart } from '../parts/redacted_thinking_part.js';
 import { ServerToolUsePart } from '../parts/server_tool_use_part.js';
 import { TextPart } from '../parts/text_part.js';
@@ -52,28 +48,8 @@ import { ThinkingPart } from '../parts/thinking_part.js';
 import { ToolUsePart } from '../parts/tool_use_part.js';
 import { WebSearchToolResultPart } from '../parts/web_search_tool_result_part.js';
 import { AnthropicConfigSchema, type ClaudeRunnerParams } from '../types.js';
-import { unsupportedBetaServerToolError } from '../utils.js';
 import { BaseRunner } from './base.js';
 import { RunnerTypes } from './types.js';
-
-/**
- * Server-managed tool blocks emitted by the beta API that Genkit cannot yet
- * interpret. We fail fast on these so callers do not accidentally treat them as
- * locally executable tool invocations.
- */
-/**
- * Server tool types that exist in beta but are not yet supported.
- * Note: server_tool_use and web_search_tool_result ARE supported (same as stable API).
- */
-const BETA_UNSUPPORTED_SERVER_TOOL_BLOCK_TYPES = new Set<string>([
-  'web_fetch_tool_result',
-  'code_execution_tool_result',
-  'bash_code_execution_tool_result',
-  'text_editor_code_execution_tool_result',
-  'mcp_tool_result',
-  'mcp_tool_use',
-  'container_upload',
-]);
 
 const BETA_APIS = [
   // 'message-batches-2024-09-24',
@@ -152,6 +128,7 @@ export class BetaRunner extends BaseRunner<BetaRunnerTypes> {
   constructor(params: ClaudeRunnerParams) {
     super(params);
 
+    this.isBeta = true;
     this.supportedParts = [
       RedactedThinkingPart,
       ServerToolUsePart,
@@ -159,8 +136,14 @@ export class BetaRunner extends BaseRunner<BetaRunnerTypes> {
       ThinkingPart,
       ToolUsePart,
       WebSearchToolResultPart,
-      McpToolUsePart,
     ];
+    this.unsupportedServerToolBlockTypes.add('web_fetch_tool_result');
+    this.unsupportedServerToolBlockTypes.add('code_execution_tool_result');
+    this.unsupportedServerToolBlockTypes.add('bash_code_execution_tool_result');
+    this.unsupportedServerToolBlockTypes.add('text_editor_code_execution_tool_result');
+    this.unsupportedServerToolBlockTypes.add('mcp_tool_result');
+    this.unsupportedServerToolBlockTypes.add('mcp_tool_use');
+    this.unsupportedServerToolBlockTypes.add('container_upload');
   }
 
   /**
@@ -450,52 +433,6 @@ export class BetaRunner extends BaseRunner<BetaRunnerTypes> {
       },
       custom: message,
     };
-  }
-
-  protected toGenkitPart(event: BetaRawMessageStreamEvent): Part | undefined {
-    if (event.type === 'content_block_start') {
-      const blockType = (event.content_block as { type?: string }).type;
-      if (
-        blockType &&
-        BETA_UNSUPPORTED_SERVER_TOOL_BLOCK_TYPES.has(blockType)
-      ) {
-        throw new Error(unsupportedBetaServerToolError(blockType));
-      }
-      return this.fromAnthropicContentBlock(event.content_block);
-    }
-    if (event.type === 'content_block_delta') {
-      if (event.delta.type === 'text_delta') {
-        return { text: event.delta.text };
-      }
-      if (event.delta.type === 'thinking_delta') {
-        return { reasoning: event.delta.thinking };
-      }
-      // server/client tool input_json_delta not supported yet
-      return undefined;
-    }
-    return undefined;
-  }
-
-  override fromAnthropicContentBlock(contentBlock: BetaContentBlock): Part {
-    const foundSupportedPartAbility = this.findSupportedPartAbility(
-      contentBlock.type,
-      SupportedPartWhen.NonStream,
-      SupportedPartWhat.ContentBlock
-    );
-    if (foundSupportedPartAbility) {
-      return foundSupportedPartAbility.func(contentBlock);
-    }
-
-    if (BETA_UNSUPPORTED_SERVER_TOOL_BLOCK_TYPES.has(contentBlock.type)) {
-      throw new Error(unsupportedBetaServerToolError(contentBlock.type));
-    }
-    const unknownType = (contentBlock as { type: string }).type;
-    logger.warn(
-      `Unexpected Anthropic beta content block type: ${unknownType}. Returning empty text. Content block: ${JSON.stringify(
-        contentBlock
-      )}`
-    );
-    return { text: '' };
   }
 
   private fromBetaStopReason(

@@ -71,6 +71,7 @@ interface RunnerTypes extends BaseRunnerTypes {
 export class Runner extends BaseRunner<RunnerTypes> {
   constructor(params: ClaudeRunnerParams) {
     super(params);
+    this.isBeta = false;
     this.supportedParts = [
       InputJsonPart,
       RedactedThinkingPart,
@@ -80,6 +81,7 @@ export class Runner extends BaseRunner<RunnerTypes> {
       ToolUsePart,
       WebSearchToolResultPart,
     ];
+    this.unsupportedServerToolBlockTypes.add('mcp_tool_use');
   }
 
   protected toAnthropicMessageContent(
@@ -345,11 +347,25 @@ export class Runner extends BaseRunner<RunnerTypes> {
   }
 
   protected toGenkitResponse(message: Message): GenerateResponseData {
-    return this.fromAnthropicResponse(message);
-  }
-
-  protected toGenkitPart(event: MessageStreamEvent): Part | undefined {
-    return this.fromAnthropicContentBlockChunk(event);
+    return {
+      candidates: [
+        {
+          index: 0,
+          finishReason: this.fromAnthropicStopReason(message.stop_reason),
+          message: {
+            role: 'model',
+            content: message.content.map((block) =>
+              this.fromAnthropicContentBlock(block)
+            ),
+          },
+        },
+      ],
+      usage: {
+        inputTokens: message.usage.input_tokens,
+        outputTokens: message.usage.output_tokens,
+      },
+      custom: message,
+    };
   }
 
   protected fromAnthropicStopReason(
@@ -369,27 +385,5 @@ export class Runner extends BaseRunner<RunnerTypes> {
       default:
         return 'other';
     }
-  }
-
-  protected fromAnthropicResponse(response: Message): GenerateResponseData {
-    return {
-      candidates: [
-        {
-          index: 0,
-          finishReason: this.fromAnthropicStopReason(response.stop_reason),
-          message: {
-            role: 'model',
-            content: response.content.map((block) =>
-              this.fromAnthropicContentBlock(block)
-            ),
-          },
-        },
-      ],
-      usage: {
-        inputTokens: response.usage.input_tokens,
-        outputTokens: response.usage.output_tokens,
-      },
-      custom: response,
-    };
   }
 }
