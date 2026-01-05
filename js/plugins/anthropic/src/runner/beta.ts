@@ -140,7 +140,9 @@ export class BetaRunner extends BaseRunner<BetaRunnerTypes> {
     this.unsupportedServerToolBlockTypes.add('web_fetch_tool_result');
     this.unsupportedServerToolBlockTypes.add('code_execution_tool_result');
     this.unsupportedServerToolBlockTypes.add('bash_code_execution_tool_result');
-    this.unsupportedServerToolBlockTypes.add('text_editor_code_execution_tool_result');
+    this.unsupportedServerToolBlockTypes.add(
+      'text_editor_code_execution_tool_result'
+    );
     this.unsupportedServerToolBlockTypes.add('mcp_tool_result');
     this.unsupportedServerToolBlockTypes.add('mcp_tool_use');
     this.unsupportedServerToolBlockTypes.add('container_upload');

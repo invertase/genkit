@@ -51,6 +51,7 @@ import {
   type ClaudeRunnerParams,
   type ThinkingConfig,
 } from '../types.js';
+import { unsupportedServerToolError } from '../utils.js';
 import {
   RunnerContentBlockParam,
   RunnerMessage,
@@ -62,7 +63,6 @@ import {
   RunnerToolResponseContent,
   RunnerTypes,
 } from './types.js';
-import { unsupportedServerToolError } from '../utils.js';
 
 export const ANTHROPIC_THINKING_CUSTOM_KEY = 'anthropicThinking';
 
@@ -442,8 +442,13 @@ export abstract class BaseRunner<ApiTypes extends RunnerTypes> {
       const contentBlock = event.content_block;
       const contentBlockType = (event.content_block as { type?: string }).type;
 
-      if (contentBlockType && this.unsupportedServerToolBlockTypes.has(contentBlockType)) {
-        throw new Error(unsupportedServerToolError(contentBlockType, this.isBeta ?? false));
+      if (
+        contentBlockType &&
+        this.unsupportedServerToolBlockTypes.has(contentBlockType)
+      ) {
+        throw new Error(
+          unsupportedServerToolError(contentBlockType, this.isBeta ?? false)
+        );
       }
 
       const foundSupportedPartAbility = this.findSupportedPartAbility(
@@ -589,7 +594,9 @@ export abstract class BaseRunner<ApiTypes extends RunnerTypes> {
       );
       const stream = this.streamMessages(body, abortSignal);
       for await (const event of stream) {
-        const part = this.toGenkitPart(event as MessageStreamEvent | BetaRawMessageStreamEvent);
+        const part = this.toGenkitPart(
+          event as MessageStreamEvent | BetaRawMessageStreamEvent
+        );
         if (part) {
           sendChunk({
             index: 0,
