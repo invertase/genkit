@@ -488,6 +488,17 @@ export abstract class BaseRunner<ApiTypes extends RunnerTypes> {
   protected fromAnthropicContentBlock(
     contentBlock: ContentBlock | BetaContentBlock
   ): Part {
+    const contentBlockType = (contentBlock as { type?: string }).type;
+
+    if (
+      contentBlockType &&
+      this.unsupportedServerToolBlockTypes.has(contentBlockType)
+    ) {
+      throw new Error(
+        unsupportedServerToolError(contentBlockType, this.isBeta ?? false)
+      );
+    }
+
     const foundSupportedPartAbility = this.findSupportedPartAbility(
       contentBlock.type,
       SupportedPartWhen.NonStream,
