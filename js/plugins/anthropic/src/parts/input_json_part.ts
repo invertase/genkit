@@ -38,9 +38,7 @@ export const InputJsonPart: SupportedPart = {
           );
         }
 
-        throw new Error(
-          `Anthropic streaming tool input (${ID_DELTA}) is not yet supported. Please disable streaming or upgrade this plugin.`
-        );
+        return { inputJson: delta.partial_json };
       },
     },
   ],
