@@ -69,12 +69,19 @@ export const ServerToolUsePart: SupportedPart = {
             SupportedPartWhat.ContentBlock
           );
         }
+
+        const baseName = contentBlock.name ?? 'unknown_tool';
+        const serverToolName =
+          'server_name' in contentBlock && contentBlock.server_name
+            ? `${contentBlock.server_name}/${baseName}`
+            : baseName;
+
         return {
-          text: `[Anthropic server tool ${contentBlock.name}] input: ${JSON.stringify(contentBlock.input)}`,
+          text: `[Anthropic server tool ${serverToolName}] input: ${JSON.stringify(contentBlock.input)}`,
           custom: {
             anthropicServerToolUse: {
               id: contentBlock.id,
-              name: contentBlock.name ?? 'unknown_tool',
+              name: serverToolName,
               input: contentBlock.input,
             },
           },

@@ -65,11 +65,10 @@ type RunnerProtectedMethods = {
     request: GenerateRequest<typeof AnthropicConfigSchema>,
     cacheSystemPrompt?: boolean
   ) => any;
-  fromAnthropicContentBlockChunk: (
-    event: MessageStreamEvent
-  ) => Part | undefined;
   fromAnthropicStopReason: (reason: Message['stop_reason']) => any;
   fromAnthropicResponse: (message: Message) => GenerateResponseData;
+  toGenkitResponse: (message: Message) => GenerateResponseData;
+  toGenkitPart: (event: MessageStreamEvent) => Part | undefined;
 };
 
 const mockClient = createMockAnthropicClient();
@@ -651,7 +650,7 @@ describe('toAnthropicTool', () => {
   });
 });
 
-describe('fromAnthropicContentBlockChunk', () => {
+describe('toGenkitPart', () => {
   const testCases: {
     should: string;
     event: MessageStreamEvent;
@@ -755,9 +754,7 @@ describe('fromAnthropicContentBlockChunk', () => {
 
   for (const test of testCases) {
     it(test.should, () => {
-      const actualOutput = testRunner.fromAnthropicContentBlockChunk(
-        test.event
-      );
+      const actualOutput = testRunner.toGenkitPart(test.event);
       assert.deepStrictEqual(actualOutput, test.expectedOutput);
     });
   }
@@ -765,7 +762,7 @@ describe('fromAnthropicContentBlockChunk', () => {
   it('should throw for unsupported tool input streaming deltas', () => {
     assert.throws(
       () =>
-        testRunner.fromAnthropicContentBlockChunk({
+        testRunner.toGenkitPart({
           index: 0,
           type: 'content_block_delta',
           delta: {
@@ -819,7 +816,7 @@ describe('fromAnthropicStopReason', () => {
   }
 });
 
-describe('fromAnthropicResponse', () => {
+describe('toGenkitResponse', () => {
   const testCases: {
     should: string;
     message: Message;
@@ -918,7 +915,7 @@ describe('fromAnthropicResponse', () => {
 
   for (const test of testCases) {
     it(test.should, () => {
-      const actualOutput = testRunner.fromAnthropicResponse(test.message);
+      const actualOutput = testRunner.toGenkitResponse(test.message);
       // Check custom field exists and is the message
       assert.ok(actualOutput.custom);
       assert.strictEqual(actualOutput.custom, test.message);
