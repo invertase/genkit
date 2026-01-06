@@ -14,13 +14,14 @@
  * limitations under the License.
  */
 
+import { ThinkingBlock, ThinkingDelta } from '@anthropic-ai/sdk/resources';
 import { Part } from 'genkit';
 import { ANTHROPIC_THINKING_CUSTOM_KEY } from '../runner/base';
 import {
   SupportedPart,
   SupportedPartWhat,
   SupportedPartWhen,
-  throwErrorWrongTypeForAbility,
+  createAbility,
 } from './part';
 
 const ID = 'thinking';
@@ -28,34 +29,26 @@ const ID_DELTA = 'thinking_delta';
 
 export const ThinkingPart: SupportedPart = {
   abilities: [
-    {
+    createAbility<ThinkingBlock>({
       id: [ID],
       when: [SupportedPartWhen.NonStream, SupportedPartWhen.StreamStart],
       what: [SupportedPartWhat.ContentBlock],
-      func: (when, what, contentBlock) => {
-        if (contentBlock.type !== ID) {
-          throwErrorWrongTypeForAbility(ID, when, what);
-        }
-
+      func: (_when, _what, contentBlock) => {
         return createThinkingPart(
           contentBlock.thinking,
           contentBlock.signature
         );
       },
-    },
+    }),
 
-    {
+    createAbility<ThinkingDelta>({
       id: [ID_DELTA],
       when: [SupportedPartWhen.StreamDelta],
       what: [SupportedPartWhat.ContentBlock],
-      func: (when, what, delta) => {
-        if (delta.type !== ID_DELTA) {
-          throwErrorWrongTypeForAbility(ID_DELTA, when, what);
-        }
-
+      func: (_when, _what, delta) => {
         return { reasoning: delta.thinking };
       },
-    },
+    }),
   ],
 };
 

@@ -14,34 +14,31 @@
  * limitations under the License.
  */
 
+import { WebSearchToolResultBlock } from '@anthropic-ai/sdk/resources';
 import { Part } from 'genkit';
 import {
+  createAbility,
   SupportedPart,
   SupportedPartWhat,
   SupportedPartWhen,
-  throwErrorWrongTypeForAbility,
 } from './part';
 
 const ID = 'web_search_tool_result';
 
 export const WebSearchToolResultPart: SupportedPart = {
   abilities: [
-    {
+    createAbility<WebSearchToolResultBlock>({
       id: [ID],
       when: [SupportedPartWhen.NonStream, SupportedPartWhen.StreamStart],
       what: [SupportedPartWhat.ContentBlock],
-      func: (when, what, contentBlock) => {
-        if (contentBlock.type !== ID) {
-          throwErrorWrongTypeForAbility(ID, when, what);
-        }
-
+      func: (_when, _what, contentBlock) => {
         return toWebSearchToolResultPart({
           type: contentBlock.type,
           toolUseId: contentBlock.tool_use_id,
           content: contentBlock.content,
         });
       },
-    },
+    }),
   ],
 };
 

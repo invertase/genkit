@@ -14,11 +14,12 @@
  * limitations under the License.
  */
 
+import { TextBlock, TextDelta } from '@anthropic-ai/sdk/resources';
 import {
   SupportedPart,
   SupportedPartWhat,
   SupportedPartWhen,
-  throwErrorWrongTypeForAbility,
+  createAbility,
 } from './part';
 
 const ID = 'text';
@@ -26,7 +27,7 @@ const ID_DELTA = 'text_delta';
 
 export const TextPart: SupportedPart = {
   abilities: [
-    {
+    createAbility<TextBlock | TextDelta>({
       id: [ID, ID_DELTA],
       when: [
         SupportedPartWhen.NonStream,
@@ -34,13 +35,9 @@ export const TextPart: SupportedPart = {
         SupportedPartWhen.StreamStart,
       ],
       what: [SupportedPartWhat.ContentBlock],
-      func: (when, what, content) => {
-        if (content.type !== ID && content.type !== ID_DELTA) {
-          throwErrorWrongTypeForAbility(ID, when, what);
-        }
-
+      func: (_when, _what, content) => {
         return { text: content.text };
       },
-    },
+    }),
   ],
 };

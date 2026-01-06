@@ -60,25 +60,46 @@ export const SupportedPartWhat = {
 
 export function throwErrorWrongTypeForAbility(
   partId: string,
-  chunk: (typeof SupportedPartWhen)[keyof typeof SupportedPartWhen],
+  when: (typeof SupportedPartWhen)[keyof typeof SupportedPartWhen],
   what: (typeof SupportedPartWhat)[keyof typeof SupportedPartWhat]
 ): never {
-  switch (chunk) {
-    case SupportedPartWhen.StreamStart:
-      throw new Error(
-        `Part '${partId}' is not supported for stream start in ${what}`
-      );
-    case SupportedPartWhen.StreamDelta:
-      throw new Error(
-        `Part '${partId}' is not supported for stream delta in ${what}`
-      );
-    case SupportedPartWhen.StreamEnd:
-      throw new Error(
-        `Part '${partId}' is not supported for stream end in ${what}`
-      );
-    case SupportedPartWhen.NonStream:
-      throw new Error(
-        `Part '${partId}' is not supported for non stream in ${what}`
-      );
+  throw new Error(
+    `Part '${partId}' is not supported for ${String(when)
+      .replace(/([A-Z])/g, ' $1')
+      .toLowerCase()} in ${what}`
+  );
+}
+
+function validatePartType<T extends { type: string }>(
+  expectedTypes: string | string[],
+  chunk: unknown,
+  when: (typeof SupportedPartWhen)[keyof typeof SupportedPartWhen],
+  what: (typeof SupportedPartWhat)[keyof typeof SupportedPartWhat]
+): asserts chunk is T {
+  const types = Array.isArray(expectedTypes) ? expectedTypes : [expectedTypes];
+  const chunkWithType = chunk as { type: string };
+  if (!types.includes(chunkWithType.type)) {
+    throwErrorWrongTypeForAbility(types[0], when, what);
   }
+}
+
+export function createAbility<T extends { type: string }>(config: {
+  id: string[];
+  when: (typeof SupportedPartWhen)[keyof typeof SupportedPartWhen][];
+  what: (typeof SupportedPartWhat)[keyof typeof SupportedPartWhat][];
+  func: (
+    when: (typeof SupportedPartWhen)[keyof typeof SupportedPartWhen],
+    what: (typeof SupportedPartWhat)[keyof typeof SupportedPartWhat],
+    chunk: T
+  ) => Part;
+}): Ability {
+  return {
+    id: config.id,
+    when: config.when,
+    what: config.what,
+    func: (when, what, chunk) => {
+      validatePartType<T>(config.id, chunk, when, what);
+      return config.func(when, what, chunk);
+    },
+  };
 }

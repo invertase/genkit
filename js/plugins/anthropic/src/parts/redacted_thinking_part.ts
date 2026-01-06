@@ -14,28 +14,25 @@
  * limitations under the License.
  */
 
+import { RedactedThinkingBlock } from '@anthropic-ai/sdk/resources';
 import {
+  createAbility,
   SupportedPart,
   SupportedPartWhat,
   SupportedPartWhen,
-  throwErrorWrongTypeForAbility,
 } from './part';
 
 const ID = 'redacted_thinking';
 
 export const RedactedThinkingPart: SupportedPart = {
   abilities: [
-    {
+    createAbility<RedactedThinkingBlock>({
       id: [ID],
       when: [SupportedPartWhen.NonStream, SupportedPartWhen.StreamStart],
       what: [SupportedPartWhat.ContentBlock],
-      func: (when, what, contentBlock) => {
-        if (contentBlock.type !== ID) {
-          throwErrorWrongTypeForAbility(ID, when, what);
-        }
-
+      func: (_when, _what, contentBlock) => {
         return { custom: { redactedThinking: contentBlock.data } };
       },
-    },
+    }),
   ],
 };

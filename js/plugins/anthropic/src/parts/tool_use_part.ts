@@ -14,26 +14,23 @@
  * limitations under the License.
  */
 
+import { ToolUseBlock } from '@anthropic-ai/sdk/resources';
 import {
+  createAbility,
   SupportedPart,
   SupportedPartWhat,
   SupportedPartWhen,
-  throwErrorWrongTypeForAbility,
 } from './part';
 
 const ID = 'tool_use';
 
 export const ToolUsePart: SupportedPart = {
   abilities: [
-    {
+    createAbility<ToolUseBlock>({
       id: [ID],
       when: [SupportedPartWhen.NonStream, SupportedPartWhen.StreamStart],
       what: [SupportedPartWhat.ContentBlock],
-      func: (when, what, contentBlock) => {
-        if (contentBlock.type !== ID) {
-          throwErrorWrongTypeForAbility(ID, when, what);
-        }
-
+      func: (_when, _what, contentBlock) => {
         return {
           toolRequest: {
             ref: contentBlock.id,
@@ -42,6 +39,6 @@ export const ToolUsePart: SupportedPart = {
           },
         };
       },
-    },
+    }),
   ],
 };

@@ -14,26 +14,23 @@
  * limitations under the License.
  */
 
+import { ServerToolUseBlock } from '@anthropic-ai/sdk/resources';
 import {
+  createAbility,
   SupportedPart,
   SupportedPartWhat,
   SupportedPartWhen,
-  throwErrorWrongTypeForAbility,
 } from './part';
 
 const ID = 'server_tool_use';
 
 export const ServerToolUsePart: SupportedPart = {
   abilities: [
-    {
+    createAbility<ServerToolUseBlock>({
       id: [ID],
       when: [SupportedPartWhen.NonStream, SupportedPartWhen.StreamStart],
       what: [SupportedPartWhat.ContentBlock],
-      func: (when, what, contentBlock) => {
-        if (contentBlock.type !== ID) {
-          throwErrorWrongTypeForAbility(ID, when, what);
-        }
-
+      func: (_when, _what, contentBlock) => {
         const baseName = contentBlock.name ?? 'unknown_tool';
         const serverToolName =
           'server_name' in contentBlock && contentBlock.server_name
@@ -51,6 +48,6 @@ export const ServerToolUsePart: SupportedPart = {
           },
         };
       },
-    },
+    }),
   ],
 };

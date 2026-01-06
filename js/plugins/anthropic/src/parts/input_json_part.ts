@@ -14,30 +14,27 @@
  * limitations under the License.
  */
 
+import { InputJSONDelta } from '@anthropic-ai/sdk/resources';
 import {
+  createAbility,
   SupportedPart,
   SupportedPartWhat,
   SupportedPartWhen,
-  throwErrorWrongTypeForAbility,
 } from './part';
 
 const ID_DELTA = 'input_json_delta';
 
 export const InputJsonPart: SupportedPart = {
   abilities: [
-    {
+    createAbility<InputJSONDelta>({
       id: [ID_DELTA],
       when: [SupportedPartWhen.StreamDelta],
       what: [SupportedPartWhat.ContentBlock],
-      func: (when, what, delta) => {
-        if (delta.type !== ID_DELTA) {
-          throwErrorWrongTypeForAbility(ID_DELTA, when, what);
-        }
-
+      func: (_when, _what, _delta) => {
         throw new Error(
           `Anthropic streaming tool input (${ID_DELTA}) is not yet supported. Please disable streaming or upgrade this plugin.`
         );
       },
-    },
+    }),
   ],
 };

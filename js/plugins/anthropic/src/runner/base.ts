@@ -51,7 +51,6 @@ import {
   type ClaudeRunnerParams,
   type ThinkingConfig,
 } from '../types.js';
-import { unsupportedServerToolError } from '../utils.js';
 import {
   RunnerContentBlockParam,
   RunnerMessage,
@@ -437,94 +436,70 @@ export abstract class BaseRunner<ApiTypes extends RunnerTypes> {
   protected toGenkitPart(
     event: MessageStreamEvent | BetaRawMessageStreamEvent
   ): Part | undefined {
-    // Handle content_block_start events
     if (event.type === 'content_block_start') {
-      const contentBlock = event.content_block;
-      const contentBlockType = (event.content_block as { type?: string }).type;
-
-      if (
-        contentBlockType &&
-        this.unsupportedServerToolBlockTypes.has(contentBlockType)
-      ) {
-        throw new Error(
-          unsupportedServerToolError(contentBlockType, this.isBeta ?? false)
-        );
-      }
-
-      const foundSupportedPartAbility = this.findSupportedPartAbility(
-        contentBlock.type,
+      return this.convertContentBlock(
+        event.content_block,
         SupportedPartWhen.StreamStart,
-        SupportedPartWhat.ContentBlock
+        true
       );
-      if (foundSupportedPartAbility) {
-        return foundSupportedPartAbility.func(
-          SupportedPartWhen.StreamStart,
-          SupportedPartWhat.ContentBlock,
-          contentBlock
-        );
-      }
-
-      logger.warn(
-        `Unexpected Anthropic content block type in stream: ${contentBlockType}. Returning undefined. Content block: ${JSON.stringify(contentBlock)}`
-      );
-      return undefined;
     }
 
-    // Handle content_block_delta events
     if (event.type === 'content_block_delta') {
-      const foundSupportedPartAbility = this.findSupportedPartAbility(
-        event.delta.type,
+      return this.convertContentBlock(
+        event.delta,
         SupportedPartWhen.StreamDelta,
-        SupportedPartWhat.ContentBlock
+        true
       );
-      if (foundSupportedPartAbility) {
-        return foundSupportedPartAbility.func(
-          SupportedPartWhen.StreamDelta,
-          SupportedPartWhat.ContentBlock,
-          event.delta
-        );
-      }
-
-      // signature_delta - ignore
-      return undefined;
     }
 
-    // Other event types (message_start, message_delta, etc.) - ignore
     return undefined;
   }
 
   protected fromAnthropicContentBlock(
     contentBlock: ContentBlock | BetaContentBlock
   ): Part {
-    const contentBlockType = (contentBlock as { type?: string }).type;
+    return (
+      this.convertContentBlock(
+        contentBlock,
+        SupportedPartWhen.NonStream,
+        false
+      ) ?? { text: '' }
+    );
+  }
 
-    if (
-      contentBlockType &&
-      this.unsupportedServerToolBlockTypes.has(contentBlockType)
-    ) {
+  private convertContentBlock(
+    chunk:
+      | MessageStreamEvent
+      | BetaRawMessageStreamEvent
+      | ContentBlock
+      | BetaContentBlock
+      | { type: string },
+    when: (typeof SupportedPartWhen)[keyof typeof SupportedPartWhen],
+    isStream: boolean
+  ): Part | undefined {
+    const chunkType = (chunk as { type: string }).type;
+
+    if (this.unsupportedServerToolBlockTypes.has(chunkType)) {
       throw new Error(
-        unsupportedServerToolError(contentBlockType, this.isBeta ?? false)
+        `Anthropic ${this.isBeta ? 'beta' : 'stable'} runner does not yet support server-managed tool block '${chunkType}'.`
       );
     }
 
-    const foundSupportedPartAbility = this.findSupportedPartAbility(
-      contentBlock.type,
-      SupportedPartWhen.NonStream,
+    const ability = this.findSupportedPartAbility(
+      chunkType,
+      when,
       SupportedPartWhat.ContentBlock
     );
-    if (foundSupportedPartAbility) {
-      return foundSupportedPartAbility.func(
-        SupportedPartWhen.NonStream,
-        SupportedPartWhat.ContentBlock,
-        contentBlock
-      );
+
+    if (ability) {
+      return ability.func(when, SupportedPartWhat.ContentBlock, chunk as never);
     }
 
-    const unknownType = (contentBlock as { type: string }).type;
     logger.warn(
-      `Unexpected Anthropic content block type: ${unknownType}. Returning empty text. Content block: ${JSON.stringify(contentBlock)}`
+      `Unexpected Anthropic content block type${isStream ? ' in stream' : ''}: ${chunkType}. ${isStream ? 'Returning undefined' : 'Returning empty text'}. Content block: ${JSON.stringify(chunk)}`
     );
-    return { text: '' };
+
+    return isStream ? undefined : { text: '' };
   }
 
   /**
