@@ -65,10 +65,12 @@ type RunnerProtectedMethods = {
     request: GenerateRequest<typeof AnthropicConfigSchema>,
     cacheSystemPrompt?: boolean
   ) => any;
+  fromAnthropicContentBlockChunk: (
+    event: MessageStreamEvent
+  ) => Part | undefined;
   fromAnthropicStopReason: (reason: Message['stop_reason']) => any;
   fromAnthropicResponse: (message: Message) => GenerateResponseData;
   toGenkitResponse: (message: Message) => GenerateResponseData;
-  toGenkitPart: (event: MessageStreamEvent) => Part | undefined;
 };
 
 const mockClient = createMockAnthropicClient();
@@ -650,7 +652,7 @@ describe('toAnthropicTool', () => {
   });
 });
 
-describe('toGenkitPart', () => {
+describe('fromAnthropicContentBlockChunk', () => {
   const testCases: {
     should: string;
     event: MessageStreamEvent;
@@ -754,7 +756,9 @@ describe('toGenkitPart', () => {
 
   for (const test of testCases) {
     it(test.should, () => {
-      const actualOutput = testRunner.toGenkitPart(test.event);
+      const actualOutput = testRunner.fromAnthropicContentBlockChunk(
+        test.event
+      );
       assert.deepStrictEqual(actualOutput, test.expectedOutput);
     });
   }
@@ -762,7 +766,7 @@ describe('toGenkitPart', () => {
   it('should throw for unsupported tool input streaming deltas', () => {
     assert.throws(
       () =>
-        testRunner.toGenkitPart({
+        testRunner.fromAnthropicContentBlockChunk({
           index: 0,
           type: 'content_block_delta',
           delta: {

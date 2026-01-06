@@ -300,7 +300,7 @@ describe('BetaRunner', () => {
     });
 
     const exposed = runner as any;
-    const textPart = exposed.toGenkitPart({
+    const textPart = exposed.fromAnthropicContentBlockChunk({
       type: 'content_block_start',
       index: 0,
       content_block: { type: 'text', text: 'hi' },
@@ -318,7 +318,7 @@ describe('BetaRunner', () => {
         server_name: 'srv',
       },
     } as any;
-    const toolPart = exposed.toGenkitPart(serverToolEvent);
+    const toolPart = exposed.fromAnthropicContentBlockChunk(serverToolEvent);
     assert.deepStrictEqual(toolPart, {
       text: '[Anthropic server tool srv/myTool] input: {"foo":"bar"}',
       custom: {
@@ -330,14 +330,16 @@ describe('BetaRunner', () => {
       },
     });
 
-    const deltaPart = exposed.toGenkitPart({
+    const deltaPart = exposed.fromAnthropicContentBlockChunk({
       type: 'content_block_delta',
       index: 0,
       delta: { type: 'thinking_delta', thinking: 'hmm' },
     } as any);
     assert.deepStrictEqual(deltaPart, { reasoning: 'hmm' });
 
-    const ignored = exposed.toGenkitPart({ type: 'message_stop' } as any);
+    const ignored = exposed.fromAnthropicContentBlockChunk({
+      type: 'message_stop',
+    } as any);
     assert.strictEqual(ignored, undefined);
   });
 
@@ -351,7 +353,7 @@ describe('BetaRunner', () => {
     const exposed = runner as any;
     assert.throws(
       () =>
-        exposed.toGenkitPart({
+        exposed.fromAnthropicContentBlockChunk({
           type: 'content_block_start',
           index: 0,
           content_block: {

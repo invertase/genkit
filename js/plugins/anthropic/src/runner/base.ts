@@ -433,7 +433,7 @@ export abstract class BaseRunner<ApiTypes extends RunnerTypes> {
     return { system, messages: anthropicMsgs };
   }
 
-  protected toGenkitPart(
+  protected fromAnthropicContentBlockChunk(
     event: MessageStreamEvent | BetaRawMessageStreamEvent
   ): Part | undefined {
     if (event.type === 'content_block_start') {
@@ -592,7 +592,7 @@ export abstract class BaseRunner<ApiTypes extends RunnerTypes> {
       );
       const stream = this.streamMessages(body, abortSignal);
       for await (const event of stream) {
-        const part = this.toGenkitPart(
+        const part = this.fromAnthropicContentBlockChunk(
           event as MessageStreamEvent | BetaRawMessageStreamEvent
         );
         if (part) {
