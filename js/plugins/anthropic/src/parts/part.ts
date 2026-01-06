@@ -24,16 +24,19 @@ import {
   BetaRawMessageStreamEvent,
 } from '@anthropic-ai/sdk/resources/beta.js';
 import { MessageStreamEvent } from '@anthropic-ai/sdk/resources/messages.js';
+import type { Part } from 'genkit';
 
 export interface SupportedPart {
   abilities: Ability[];
 }
 
 export interface Ability {
-  id: string;
-  when: (typeof SupportedPartWhen)[keyof typeof SupportedPartWhen];
-  what: (typeof SupportedPartWhat)[keyof typeof SupportedPartWhat];
+  id: string[];
+  when: (typeof SupportedPartWhen)[keyof typeof SupportedPartWhen][];
+  what: (typeof SupportedPartWhat)[keyof typeof SupportedPartWhat][];
   func: (
+    when: (typeof SupportedPartWhen)[keyof typeof SupportedPartWhen],
+    what: (typeof SupportedPartWhat)[keyof typeof SupportedPartWhat],
     chunk:
       | MessageStreamEvent
       | BetaRawMessageStreamEvent
@@ -41,7 +44,7 @@ export interface Ability {
       | BetaContentBlock
       | RawContentBlockDelta
       | BetaRawContentBlockDelta
-  ) => any;
+  ) => Part;
 }
 
 export const SupportedPartWhen = {

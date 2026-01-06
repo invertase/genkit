@@ -26,33 +26,12 @@ const ID = 'redacted_thinking';
 export const RedactedThinkingPart: SupportedPart = {
   abilities: [
     {
-      id: ID,
-      when: SupportedPartWhen.NonStream,
-      what: SupportedPartWhat.ContentBlock,
-      func: (contentBlock) => {
+      id: [ID],
+      when: [SupportedPartWhen.NonStream, SupportedPartWhen.StreamStart],
+      what: [SupportedPartWhat.ContentBlock],
+      func: (when, what, contentBlock) => {
         if (contentBlock.type !== ID) {
-          throwErrorWrongTypeForAbility(
-            ID,
-            SupportedPartWhen.NonStream,
-            SupportedPartWhat.ContentBlock
-          );
-        }
-
-        return { custom: { redactedThinking: contentBlock.data } };
-      },
-    },
-
-    {
-      id: ID,
-      when: SupportedPartWhen.StreamStart,
-      what: SupportedPartWhat.ContentBlock,
-      func: (contentBlock) => {
-        if (contentBlock.type !== ID) {
-          throwErrorWrongTypeForAbility(
-            ID,
-            SupportedPartWhen.StreamStart,
-            SupportedPartWhat.ContentBlock
-          );
+          throwErrorWrongTypeForAbility(ID, when, what);
         }
 
         return { custom: { redactedThinking: contentBlock.data } };

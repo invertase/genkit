@@ -26,39 +26,12 @@ const ID = 'tool_use';
 export const ToolUsePart: SupportedPart = {
   abilities: [
     {
-      id: ID,
-      when: SupportedPartWhen.NonStream,
-      what: SupportedPartWhat.ContentBlock,
-      func: (contentBlock) => {
+      id: [ID],
+      when: [SupportedPartWhen.NonStream, SupportedPartWhen.StreamStart],
+      what: [SupportedPartWhat.ContentBlock],
+      func: (when, what, contentBlock) => {
         if (contentBlock.type !== ID) {
-          throwErrorWrongTypeForAbility(
-            ID,
-            SupportedPartWhen.NonStream,
-            SupportedPartWhat.ContentBlock
-          );
-        }
-
-        return {
-          toolRequest: {
-            ref: contentBlock.id,
-            name: contentBlock.name ?? 'unknown_tool',
-            input: contentBlock.input,
-          },
-        };
-      },
-    },
-
-    {
-      id: ID,
-      when: SupportedPartWhen.StreamStart,
-      what: SupportedPartWhat.ContentBlock,
-      func: (contentBlock) => {
-        if (contentBlock.type !== ID) {
-          throwErrorWrongTypeForAbility(
-            ID,
-            SupportedPartWhen.StreamStart,
-            SupportedPartWhat.ContentBlock
-          );
+          throwErrorWrongTypeForAbility(ID, when, what);
         }
 
         return {

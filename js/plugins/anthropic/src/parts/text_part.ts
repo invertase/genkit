@@ -27,53 +27,19 @@ const ID_DELTA = 'text_delta';
 export const TextPart: SupportedPart = {
   abilities: [
     {
-      id: ID,
-      when: SupportedPartWhen.NonStream,
-      what: SupportedPartWhat.ContentBlock,
-      func: (contentBlock) => {
-        if (contentBlock.type !== ID) {
-          throwErrorWrongTypeForAbility(
-            ID,
-            SupportedPartWhen.NonStream,
-            SupportedPartWhat.ContentBlock
-          );
+      id: [ID, ID_DELTA],
+      when: [
+        SupportedPartWhen.NonStream,
+        SupportedPartWhen.StreamDelta,
+        SupportedPartWhen.StreamStart,
+      ],
+      what: [SupportedPartWhat.ContentBlock],
+      func: (when, what, content) => {
+        if (content.type !== ID && content.type !== ID_DELTA) {
+          throwErrorWrongTypeForAbility(ID, when, what);
         }
 
-        return { text: contentBlock.text };
-      },
-    },
-
-    {
-      id: ID_DELTA,
-      when: SupportedPartWhen.StreamDelta,
-      what: SupportedPartWhat.ContentBlock,
-      func: (delta) => {
-        if (delta.type !== ID_DELTA) {
-          throwErrorWrongTypeForAbility(
-            ID_DELTA,
-            SupportedPartWhen.StreamDelta,
-            SupportedPartWhat.ContentBlock
-          );
-        }
-
-        return { text: delta.text };
-      },
-    },
-
-    {
-      id: ID,
-      when: SupportedPartWhen.StreamStart,
-      what: SupportedPartWhat.ContentBlock,
-      func: (contentBlock) => {
-        if (contentBlock.type !== ID) {
-          throwErrorWrongTypeForAbility(
-            ID,
-            SupportedPartWhen.StreamStart,
-            SupportedPartWhat.ContentBlock
-          );
-        }
-
-        return { text: contentBlock.text };
+        return { text: content.text };
       },
     },
   ],

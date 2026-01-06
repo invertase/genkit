@@ -26,48 +26,12 @@ const ID = 'server_tool_use';
 export const ServerToolUsePart: SupportedPart = {
   abilities: [
     {
-      id: ID,
-      when: SupportedPartWhen.NonStream,
-      what: SupportedPartWhat.ContentBlock,
-      func: (contentBlock) => {
+      id: [ID],
+      when: [SupportedPartWhen.NonStream, SupportedPartWhen.StreamStart],
+      what: [SupportedPartWhat.ContentBlock],
+      func: (when, what, contentBlock) => {
         if (contentBlock.type !== ID) {
-          throwErrorWrongTypeForAbility(
-            ID,
-            SupportedPartWhen.NonStream,
-            SupportedPartWhat.ContentBlock
-          );
-        }
-
-        const baseName = contentBlock.name ?? 'unknown_tool';
-        const serverToolName =
-          'server_name' in contentBlock && contentBlock.server_name
-            ? `${contentBlock.server_name}/${baseName}`
-            : baseName;
-
-        return {
-          text: `[Anthropic server tool ${serverToolName}] input: ${JSON.stringify(contentBlock.input)}`,
-          custom: {
-            anthropicServerToolUse: {
-              id: contentBlock.id,
-              name: serverToolName,
-              input: contentBlock.input,
-            },
-          },
-        };
-      },
-    },
-
-    {
-      id: ID,
-      when: SupportedPartWhen.StreamStart,
-      what: SupportedPartWhat.ContentBlock,
-      func: (contentBlock) => {
-        if (contentBlock.type !== ID) {
-          throwErrorWrongTypeForAbility(
-            ID,
-            SupportedPartWhen.StreamStart,
-            SupportedPartWhat.ContentBlock
-          );
+          throwErrorWrongTypeForAbility(ID, when, what);
         }
 
         const baseName = contentBlock.name ?? 'unknown_tool';

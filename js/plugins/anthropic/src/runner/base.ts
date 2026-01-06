@@ -457,7 +457,11 @@ export abstract class BaseRunner<ApiTypes extends RunnerTypes> {
         SupportedPartWhat.ContentBlock
       );
       if (foundSupportedPartAbility) {
-        return foundSupportedPartAbility.func(contentBlock);
+        return foundSupportedPartAbility.func(
+          SupportedPartWhen.StreamStart,
+          SupportedPartWhat.ContentBlock,
+          contentBlock
+        );
       }
 
       logger.warn(
@@ -474,7 +478,11 @@ export abstract class BaseRunner<ApiTypes extends RunnerTypes> {
         SupportedPartWhat.ContentBlock
       );
       if (foundSupportedPartAbility) {
-        return foundSupportedPartAbility.func(event.delta);
+        return foundSupportedPartAbility.func(
+          SupportedPartWhen.StreamDelta,
+          SupportedPartWhat.ContentBlock,
+          event.delta
+        );
       }
 
       // signature_delta - ignore
@@ -505,7 +513,11 @@ export abstract class BaseRunner<ApiTypes extends RunnerTypes> {
       SupportedPartWhat.ContentBlock
     );
     if (foundSupportedPartAbility) {
-      return foundSupportedPartAbility.func(contentBlock);
+      return foundSupportedPartAbility.func(
+        SupportedPartWhen.NonStream,
+        SupportedPartWhat.ContentBlock,
+        contentBlock
+      );
     }
 
     const unknownType = (contentBlock as { type: string }).type;
@@ -534,9 +546,9 @@ export abstract class BaseRunner<ApiTypes extends RunnerTypes> {
     for (const part of this.supportedParts) {
       for (const ability of part.abilities) {
         if (
-          ability.when === when &&
-          ability.what === what &&
-          ability.id === type
+          ability.when.includes(when) &&
+          ability.what.includes(what) &&
+          ability.id.includes(type)
         ) {
           return ability;
         }

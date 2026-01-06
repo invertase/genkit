@@ -29,16 +29,12 @@ const ID_DELTA = 'thinking_delta';
 export const ThinkingPart: SupportedPart = {
   abilities: [
     {
-      id: ID,
-      when: SupportedPartWhen.NonStream,
-      what: SupportedPartWhat.ContentBlock,
-      func: (contentBlock) => {
+      id: [ID],
+      when: [SupportedPartWhen.NonStream, SupportedPartWhen.StreamStart],
+      what: [SupportedPartWhat.ContentBlock],
+      func: (when, what, contentBlock) => {
         if (contentBlock.type !== ID) {
-          throwErrorWrongTypeForAbility(
-            ID,
-            SupportedPartWhen.NonStream,
-            SupportedPartWhat.ContentBlock
-          );
+          throwErrorWrongTypeForAbility(ID, when, what);
         }
 
         return createThinkingPart(
@@ -49,39 +45,15 @@ export const ThinkingPart: SupportedPart = {
     },
 
     {
-      id: ID_DELTA,
-      when: SupportedPartWhen.StreamDelta,
-      what: SupportedPartWhat.ContentBlock,
-      func: (delta) => {
+      id: [ID_DELTA],
+      when: [SupportedPartWhen.StreamDelta],
+      what: [SupportedPartWhat.ContentBlock],
+      func: (when, what, delta) => {
         if (delta.type !== ID_DELTA) {
-          throwErrorWrongTypeForAbility(
-            ID_DELTA,
-            SupportedPartWhen.StreamDelta,
-            SupportedPartWhat.ContentBlock
-          );
+          throwErrorWrongTypeForAbility(ID_DELTA, when, what);
         }
 
         return { reasoning: delta.thinking };
-      },
-    },
-
-    {
-      id: ID,
-      when: SupportedPartWhen.StreamStart,
-      what: SupportedPartWhat.ContentBlock,
-      func: (contentBlock) => {
-        if (contentBlock.type !== ID) {
-          throwErrorWrongTypeForAbility(
-            ID,
-            SupportedPartWhen.StreamStart,
-            SupportedPartWhat.ContentBlock
-          );
-        }
-
-        return createThinkingPart(
-          contentBlock.thinking,
-          contentBlock.signature
-        );
       },
     },
   ],

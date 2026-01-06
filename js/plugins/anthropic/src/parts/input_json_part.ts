@@ -26,16 +26,12 @@ const ID_DELTA = 'input_json_delta';
 export const InputJsonPart: SupportedPart = {
   abilities: [
     {
-      id: ID_DELTA,
-      when: SupportedPartWhen.StreamDelta,
-      what: SupportedPartWhat.ContentBlock,
-      func: (delta) => {
+      id: [ID_DELTA],
+      when: [SupportedPartWhen.StreamDelta],
+      what: [SupportedPartWhat.ContentBlock],
+      func: (when, what, delta) => {
         if (delta.type !== ID_DELTA) {
-          throwErrorWrongTypeForAbility(
-            ID_DELTA,
-            SupportedPartWhen.StreamDelta,
-            SupportedPartWhat.ContentBlock
-          );
+          throwErrorWrongTypeForAbility(ID_DELTA, when, what);
         }
 
         throw new Error(
