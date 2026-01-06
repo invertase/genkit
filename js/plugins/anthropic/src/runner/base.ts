@@ -570,7 +570,7 @@ export abstract class BaseRunner<ApiTypes extends RunnerTypes> {
     abortSignal: AbortSignal
   ): RunnerStream<ApiTypes>;
 
-  protected abstract toGenkitResponse(
+  protected abstract fromAnthropicResponse(
     message: RunnerMessage<ApiTypes>
   ): GenerateResponseData;
 
@@ -603,7 +603,7 @@ export abstract class BaseRunner<ApiTypes extends RunnerTypes> {
         }
       }
       const finalMessage = await stream.finalMessage();
-      return this.toGenkitResponse(finalMessage);
+      return this.fromAnthropicResponse(finalMessage);
     }
 
     const body = this.toAnthropicRequestBody(
@@ -612,6 +612,6 @@ export abstract class BaseRunner<ApiTypes extends RunnerTypes> {
       this.cacheSystemPrompt
     );
     const response = await this.createMessage(body, abortSignal);
-    return this.toGenkitResponse(response);
+    return this.fromAnthropicResponse(response);
   }
 }

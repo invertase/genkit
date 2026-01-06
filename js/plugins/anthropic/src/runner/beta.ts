@@ -415,7 +415,7 @@ export class BetaRunner extends BaseRunner<BetaRunnerTypes> {
     return body;
   }
 
-  protected toGenkitResponse(message: BetaMessage): GenerateResponseData {
+  protected fromAnthropicResponse(message: BetaMessage): GenerateResponseData {
     return {
       candidates: [
         {

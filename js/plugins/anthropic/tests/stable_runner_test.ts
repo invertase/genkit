@@ -70,7 +70,6 @@ type RunnerProtectedMethods = {
   ) => Part | undefined;
   fromAnthropicStopReason: (reason: Message['stop_reason']) => any;
   fromAnthropicResponse: (message: Message) => GenerateResponseData;
-  toGenkitResponse: (message: Message) => GenerateResponseData;
 };
 
 const mockClient = createMockAnthropicClient();
@@ -820,7 +819,7 @@ describe('fromAnthropicStopReason', () => {
   }
 });
 
-describe('toGenkitResponse', () => {
+describe('fromAnthropicResponse', () => {
   const testCases: {
     should: string;
     message: Message;
@@ -919,7 +918,7 @@ describe('toGenkitResponse', () => {
 
   for (const test of testCases) {
     it(test.should, () => {
-      const actualOutput = testRunner.toGenkitResponse(test.message);
+      const actualOutput = testRunner.fromAnthropicResponse(test.message);
       // Check custom field exists and is the message
       assert.ok(actualOutput.custom);
       assert.strictEqual(actualOutput.custom, test.message);

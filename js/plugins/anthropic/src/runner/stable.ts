@@ -346,7 +346,7 @@ export class Runner extends BaseRunner<RunnerTypes> {
     return this.client.messages.stream(body, { signal: abortSignal });
   }
 
-  protected toGenkitResponse(message: Message): GenerateResponseData {
+  protected fromAnthropicResponse(message: Message): GenerateResponseData {
     return {
       candidates: [
         {
