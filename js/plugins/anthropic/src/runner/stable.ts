@@ -107,6 +107,9 @@ export class Runner extends BaseRunner<RunnerTypes> {
         type: 'text',
         text: part.text,
         citations: null,
+        cache_control: part.metadata?.cache_control as
+          | TextBlockParam['cache_control']
+          | null,
       };
     }
 
@@ -115,6 +118,9 @@ export class Runner extends BaseRunner<RunnerTypes> {
         return {
           type: 'document',
           source: this.toPdfDocumentSource(part.media),
+          cache_control: part.metadata?.cache_control as
+            | DocumentBlockParam['cache_control']
+            | null,
         };
       }
 
@@ -127,6 +133,9 @@ export class Runner extends BaseRunner<RunnerTypes> {
             data: source.data,
             media_type: source.mediaType,
           },
+          cache_control: part.metadata?.cache_control as
+            | ImageBlockParam['cache_control']
+            | null,
         };
       }
       return {
@@ -135,6 +144,9 @@ export class Runner extends BaseRunner<RunnerTypes> {
           type: 'url',
           url: source.url,
         },
+        cache_control: part.metadata?.cache_control as
+          | ImageBlockParam['cache_control']
+          | null,
       };
     }
 
@@ -151,6 +163,9 @@ export class Runner extends BaseRunner<RunnerTypes> {
         id: part.toolRequest.ref,
         name: part.toolRequest.name,
         input: part.toolRequest.input,
+        cache_control: part.metadata?.cache_control as
+          | ToolUseBlockParam['cache_control']
+          | null,
       };
     }
 
@@ -166,6 +181,9 @@ export class Runner extends BaseRunner<RunnerTypes> {
         type: 'tool_result',
         tool_use_id: part.toolResponse.ref,
         content: [this.toAnthropicToolResponseContent(part)],
+        cache_control: part.metadata?.cache_control as
+          | ToolResultBlockParam['cache_control']
+          | null,
       };
     }
 
@@ -192,19 +210,6 @@ export class Runner extends BaseRunner<RunnerTypes> {
     const mappedModelName =
       request.config?.version ?? extractVersion(model, modelName);
 
-    const systemValue =
-      system === undefined
-        ? undefined
-        : cacheSystemPrompt
-          ? [
-              {
-                type: 'text' as const,
-                text: system,
-                cache_control: { type: 'ephemeral' as const },
-              },
-            ]
-          : system;
-
     const thinkingConfig = this.toAnthropicThinkingConfig(
       request.config?.thinking
     ) as MessageCreateParams['thinking'] | undefined;
@@ -226,7 +231,7 @@ export class Runner extends BaseRunner<RunnerTypes> {
       max_tokens:
         request.config?.maxOutputTokens ?? this.DEFAULT_MAX_OUTPUT_TOKENS,
       messages,
-      system: systemValue,
+      system: system as TextBlockParam[],
       stop_sequences: request.config?.stopSequences,
       temperature: request.config?.temperature,
       top_k: topK,
@@ -257,19 +262,6 @@ export class Runner extends BaseRunner<RunnerTypes> {
     const mappedModelName =
       request.config?.version ?? extractVersion(model, modelName);
 
-    const systemValue =
-      system === undefined
-        ? undefined
-        : cacheSystemPrompt
-          ? [
-              {
-                type: 'text' as const,
-                text: system,
-                cache_control: { type: 'ephemeral' as const },
-              },
-            ]
-          : system;
-
     const thinkingConfig = this.toAnthropicThinkingConfig(
       request.config?.thinking
     ) as MessageCreateParams['thinking'] | undefined;
@@ -292,7 +284,7 @@ export class Runner extends BaseRunner<RunnerTypes> {
         request.config?.maxOutputTokens ?? this.DEFAULT_MAX_OUTPUT_TOKENS,
       messages,
       stream: true,
-      system: systemValue,
+      system: system as TextBlockParam[],
       stop_sequences: request.config?.stopSequences,
       temperature: request.config?.temperature,
       top_k: topK,
@@ -311,6 +303,7 @@ export class Runner extends BaseRunner<RunnerTypes> {
     body: MessageCreateParamsNonStreaming,
     abortSignal: AbortSignal
   ): Promise<Message> {
+    console.log('body in createMessage', JSON.stringify(body, null, 2));
     return await this.client.messages.create(body, { signal: abortSignal });
   }
 
@@ -441,7 +434,9 @@ export class Runner extends BaseRunner<RunnerTypes> {
         };
 
       case 'text':
-        return { text: contentBlock.text };
+        return {
+          text: contentBlock.text,
+        };
 
       case 'thinking':
         return this.createThinkingPart(
@@ -498,6 +493,15 @@ export class Runner extends BaseRunner<RunnerTypes> {
       usage: {
         inputTokens: response.usage.input_tokens,
         outputTokens: response.usage.output_tokens,
+        custom: {
+          cache_creation_input_tokens:
+            response.usage.cache_creation_input_tokens ?? 0,
+          cache_read_input_tokens: response.usage.cache_read_input_tokens ?? 0,
+          ephemeral_5m_input_tokens:
+            response.usage.cache_creation?.ephemeral_5m_input_tokens ?? 0,
+          ephemeral_1h_input_tokens:
+            response.usage.cache_creation?.ephemeral_1h_input_tokens ?? 0,
+        },
       },
       custom: response,
     };
