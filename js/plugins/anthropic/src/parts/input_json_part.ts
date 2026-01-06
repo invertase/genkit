@@ -34,9 +34,7 @@ export const InputJsonPart: SupportedPart = {
           throwErrorWrongTypeForAbility(ID_DELTA, when, what);
         }
 
-        throw new Error(
-          `Anthropic streaming tool input (${ID_DELTA}) is not yet supported. Please disable streaming or upgrade this plugin.`
-        );
+        return { inputJson: delta.partial_json };
       },
     },
   ],
