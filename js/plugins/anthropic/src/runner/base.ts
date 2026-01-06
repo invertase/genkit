@@ -62,7 +62,6 @@ const ANTHROPIC_THINKING_CUSTOM_KEY = 'anthropicThinking';
 export abstract class BaseRunner<ApiTypes extends RunnerTypes> {
   protected name: string;
   protected client: Anthropic;
-  protected cacheSystemPrompt?: boolean;
 
   /**
    * Default maximum output tokens for Claude models when not specified in the request.
@@ -72,7 +71,6 @@ export abstract class BaseRunner<ApiTypes extends RunnerTypes> {
   constructor(params: ClaudeRunnerParams) {
     this.name = params.name;
     this.client = params.client;
-    this.cacheSystemPrompt = params.cacheSystemPrompt;
   }
 
   /**
@@ -459,28 +457,24 @@ export abstract class BaseRunner<ApiTypes extends RunnerTypes> {
    * Converts an Anthropic request to a non-streaming Anthropic API request body.
    * @param modelName The name of the Anthropic model to use.
    * @param request The Genkit GenerateRequest to convert.
-   * @param cacheSystemPrompt Whether to cache the system prompt.
    * @returns The converted Anthropic API non-streaming request body.
    * @throws An error if an unsupported output format is requested.
    */
   protected abstract toAnthropicRequestBody(
     modelName: string,
-    request: GenerateRequest<typeof AnthropicConfigSchema>,
-    cacheSystemPrompt?: boolean
+    request: GenerateRequest<typeof AnthropicConfigSchema>
   ): RunnerRequestBody<ApiTypes>;
 
   /**
    * Converts an Anthropic request to a streaming Anthropic API request body.
    * @param modelName The name of the Anthropic model to use.
    * @param request The Genkit GenerateRequest to convert.
-   * @param cacheSystemPrompt Whether to cache the system prompt.
    * @returns The converted Anthropic API streaming request body.
    * @throws An error if an unsupported output format is requested.
    */
   protected abstract toAnthropicStreamingRequestBody(
     modelName: string,
-    request: GenerateRequest<typeof AnthropicConfigSchema>,
-    cacheSystemPrompt?: boolean
+    request: GenerateRequest<typeof AnthropicConfigSchema>
   ): RunnerStreamingRequestBody<ApiTypes>;
 
   protected abstract createMessage(
@@ -512,11 +506,7 @@ export abstract class BaseRunner<ApiTypes extends RunnerTypes> {
     const { streamingRequested, sendChunk, abortSignal } = options;
 
     if (streamingRequested) {
-      const body = this.toAnthropicStreamingRequestBody(
-        this.name,
-        request,
-        this.cacheSystemPrompt
-      );
+      const body = this.toAnthropicStreamingRequestBody(this.name, request);
       const stream = this.streamMessages(body, abortSignal);
       for await (const event of stream) {
         const part = this.toGenkitPart(event);
@@ -531,11 +521,7 @@ export abstract class BaseRunner<ApiTypes extends RunnerTypes> {
       return this.toGenkitResponse(finalMessage);
     }
 
-    const body = this.toAnthropicRequestBody(
-      this.name,
-      request,
-      this.cacheSystemPrompt
-    );
+    const body = this.toAnthropicRequestBody(this.name, request);
     const response = await this.createMessage(body, abortSignal);
     return this.toGenkitResponse(response);
   }
