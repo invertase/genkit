@@ -16,7 +16,6 @@
 
 import { MessageStream } from '@anthropic-ai/sdk/lib/MessageStream.js';
 import type {
-  ContentBlock,
   DocumentBlockParam,
   ImageBlockParam,
   Message,
@@ -38,9 +37,15 @@ import type {
   ModelResponseData,
   Part,
 } from 'genkit';
-import { logger } from 'genkit/logging';
 
 import { KNOWN_CLAUDE_MODELS, extractVersion } from '../models.js';
+import { InputJsonPart } from '../parts/input_json_part.js';
+import { RedactedThinkingPart } from '../parts/redacted_thinking_part.js';
+import { ServerToolUsePart } from '../parts/server_tool_use_part.js';
+import { TextPart } from '../parts/text_part.js';
+import { ThinkingPart } from '../parts/thinking_part.js';
+import { ToolUsePart } from '../parts/tool_use_part.js';
+import { WebSearchToolResultPart } from '../parts/web_search_tool_result_part.js';
 import { AnthropicConfigSchema, type ClaudeRunnerParams } from '../types.js';
 import { removeUndefinedProperties } from '../utils.js';
 import { BaseRunner } from './base.js';
@@ -68,6 +73,17 @@ interface RunnerTypes extends BaseRunnerTypes {
 export class Runner extends BaseRunner<RunnerTypes> {
   constructor(params: ClaudeRunnerParams) {
     super(params);
+    this.isBeta = false;
+    this.supportedParts = [
+      InputJsonPart,
+      RedactedThinkingPart,
+      ServerToolUsePart,
+      TextPart,
+      ThinkingPart,
+      ToolUsePart,
+      WebSearchToolResultPart,
+    ];
+    this.unsupportedServerToolBlockTypes.add('mcp_tool_use');
   }
 
   protected toAnthropicMessageContent(
@@ -321,145 +337,26 @@ export class Runner extends BaseRunner<RunnerTypes> {
     return this.client.messages.stream(body, { signal: abortSignal });
   }
 
-  protected toGenkitResponse(message: Message): GenerateResponseData {
-    return this.fromAnthropicResponse(message);
-  }
-
-  protected toGenkitPart(event: MessageStreamEvent): Part | undefined {
-    return this.fromAnthropicContentBlockChunk(event);
-  }
-
-  protected fromAnthropicContentBlockChunk(
-    event: MessageStreamEvent
-  ): Part | undefined {
-    // Handle content_block_delta events
-    if (event.type === 'content_block_delta') {
-      const delta = event.delta;
-
-      if (delta.type === 'input_json_delta') {
-        throw new Error(
-          'Anthropic streaming tool input (input_json_delta) is not yet supported. Please disable streaming or upgrade this plugin.'
-        );
-      }
-
-      if (delta.type === 'text_delta') {
-        return { text: delta.text };
-      }
-
-      if (delta.type === 'thinking_delta') {
-        return { reasoning: delta.thinking };
-      }
-
-      // signature_delta - ignore
-      return undefined;
-    }
-
-    // Handle content_block_start events
-    if (event.type === 'content_block_start') {
-      const block = event.content_block;
-
-      switch (block.type) {
-        case 'server_tool_use':
-          return {
-            text: `[Anthropic server tool ${block.name}] input: ${JSON.stringify(block.input)}`,
-            custom: {
-              anthropicServerToolUse: {
-                id: block.id,
-                name: block.name,
-                input: block.input,
-              },
-            },
-          };
-
-        case 'web_search_tool_result':
-          return this.toWebSearchToolResultPart({
-            type: block.type,
-            toolUseId: block.tool_use_id,
-            content: block.content,
-          });
-
-        case 'text':
-          return { text: block.text };
-
-        case 'thinking':
-          return this.createThinkingPart(block.thinking, block.signature);
-
-        case 'redacted_thinking':
-          return { custom: { redactedThinking: block.data } };
-
-        case 'tool_use':
-          return {
-            toolRequest: {
-              ref: block.id,
-              name: block.name,
-              input: block.input,
-            },
-          };
-
-        default: {
-          const unknownType = (block as { type: string }).type;
-          logger.warn(
-            `Unexpected Anthropic content block type in stream: ${unknownType}. Returning undefined. Content block: ${JSON.stringify(block)}`
-          );
-          return undefined;
-        }
-      }
-    }
-
-    // Other event types (message_start, message_delta, etc.) - ignore
-    return undefined;
-  }
-
-  protected fromAnthropicContentBlock(contentBlock: ContentBlock): Part {
-    switch (contentBlock.type) {
-      case 'server_tool_use':
-        return {
-          text: `[Anthropic server tool ${contentBlock.name}] input: ${JSON.stringify(contentBlock.input)}`,
-          custom: {
-            anthropicServerToolUse: {
-              id: contentBlock.id,
-              name: contentBlock.name,
-              input: contentBlock.input,
-            },
+  protected fromAnthropicResponse(message: Message): GenerateResponseData {
+    return {
+      candidates: [
+        {
+          index: 0,
+          finishReason: this.fromAnthropicStopReason(message.stop_reason),
+          message: {
+            role: 'model',
+            content: message.content.map((block) =>
+              this.fromAnthropicContentBlock(block)
+            ),
           },
-        };
-
-      case 'web_search_tool_result':
-        return this.toWebSearchToolResultPart({
-          type: contentBlock.type,
-          toolUseId: contentBlock.tool_use_id,
-          content: contentBlock.content,
-        });
-
-      case 'tool_use':
-        return {
-          toolRequest: {
-            ref: contentBlock.id,
-            name: contentBlock.name,
-            input: contentBlock.input,
-          },
-        };
-
-      case 'text':
-        return { text: contentBlock.text };
-
-      case 'thinking':
-        return this.createThinkingPart(
-          contentBlock.thinking,
-          contentBlock.signature
-        );
-
-      case 'redacted_thinking':
-        return { custom: { redactedThinking: contentBlock.data } };
-
-      default: {
-        const unknownType = (contentBlock as { type: string }).type;
-        logger.warn(
-          `Unexpected Anthropic content block type: ${unknownType}. Returning empty text. Content block: ${JSON.stringify(contentBlock)}`
-        );
-        return { text: '' };
-      }
-    }
+        },
+      ],
+      usage: {
+        inputTokens: message.usage.input_tokens,
+        outputTokens: message.usage.output_tokens,
+      },
+      custom: message,
+    };
   }
 
   protected fromAnthropicStopReason(
@@ -479,27 +376,5 @@ export class Runner extends BaseRunner<RunnerTypes> {
       default:
         return 'other';
     }
-  }
-
-  protected fromAnthropicResponse(response: Message): GenerateResponseData {
-    return {
-      candidates: [
-        {
-          index: 0,
-          finishReason: this.fromAnthropicStopReason(response.stop_reason),
-          message: {
-            role: 'model',
-            content: response.content.map((block) =>
-              this.fromAnthropicContentBlock(block)
-            ),
-          },
-        },
-      ],
-      usage: {
-        inputTokens: response.usage.input_tokens,
-        outputTokens: response.usage.output_tokens,
-      },
-      custom: response,
-    };
   }
 }
