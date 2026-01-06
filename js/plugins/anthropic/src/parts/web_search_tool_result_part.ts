@@ -27,37 +27,12 @@ const ID = 'web_search_tool_result';
 export const WebSearchToolResultPart: SupportedPart = {
   abilities: [
     {
-      id: ID,
-      when: SupportedPartWhen.NonStream,
-      what: SupportedPartWhat.ContentBlock,
-      func: (contentBlock) => {
+      id: [ID],
+      when: [SupportedPartWhen.NonStream, SupportedPartWhen.StreamStart],
+      what: [SupportedPartWhat.ContentBlock],
+      func: (when, what, contentBlock) => {
         if (contentBlock.type !== ID) {
-          throwErrorWrongTypeForAbility(
-            ID,
-            SupportedPartWhen.NonStream,
-            SupportedPartWhat.ContentBlock
-          );
-        }
-
-        return toWebSearchToolResultPart({
-          type: contentBlock.type,
-          toolUseId: contentBlock.tool_use_id,
-          content: contentBlock.content,
-        });
-      },
-    },
-
-    {
-      id: ID,
-      when: SupportedPartWhen.StreamStart,
-      what: SupportedPartWhat.ContentBlock,
-      func: (contentBlock) => {
-        if (contentBlock.type !== ID) {
-          throwErrorWrongTypeForAbility(
-            ID,
-            SupportedPartWhen.StreamStart,
-            SupportedPartWhat.ContentBlock
-          );
+          throwErrorWrongTypeForAbility(ID, when, what);
         }
 
         return toWebSearchToolResultPart({
