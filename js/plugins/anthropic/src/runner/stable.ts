@@ -107,9 +107,9 @@ export class Runner extends BaseRunner<RunnerTypes> {
         type: 'text',
         text: part.text,
         citations: null,
-        cache_control: part.metadata?.cache_control as
-          | TextBlockParam['cache_control']
-          | null,
+        // This is intentional. `part.metadata?.cache_control` is unknown, and casting it to the relevant type of the property makes it more robust to Anthropic SDK API changes.
+        cache_control: part.metadata
+          ?.cache_control as TextBlockParam['cache_control'],
       };
     }
 
@@ -118,9 +118,8 @@ export class Runner extends BaseRunner<RunnerTypes> {
         return {
           type: 'document',
           source: this.toPdfDocumentSource(part.media),
-          cache_control: part.metadata?.cache_control as
-            | DocumentBlockParam['cache_control']
-            | null,
+          cache_control: part.metadata
+            ?.cache_control as DocumentBlockParam['cache_control'],
         };
       }
 
@@ -133,9 +132,8 @@ export class Runner extends BaseRunner<RunnerTypes> {
             data: source.data,
             media_type: source.mediaType,
           },
-          cache_control: part.metadata?.cache_control as
-            | ImageBlockParam['cache_control']
-            | null,
+          cache_control: part.metadata
+            ?.cache_control as ImageBlockParam['cache_control'],
         };
       }
       return {
@@ -144,9 +142,8 @@ export class Runner extends BaseRunner<RunnerTypes> {
           type: 'url',
           url: source.url,
         },
-        cache_control: part.metadata?.cache_control as
-          | ImageBlockParam['cache_control']
-          | null,
+        cache_control: part.metadata
+          ?.cache_control as ImageBlockParam['cache_control'],
       };
     }
 
@@ -163,9 +160,8 @@ export class Runner extends BaseRunner<RunnerTypes> {
         id: part.toolRequest.ref,
         name: part.toolRequest.name,
         input: part.toolRequest.input,
-        cache_control: part.metadata?.cache_control as
-          | ToolUseBlockParam['cache_control']
-          | null,
+        cache_control: part.metadata
+          ?.cache_control as ToolUseBlockParam['cache_control'],
       };
     }
 
@@ -181,9 +177,8 @@ export class Runner extends BaseRunner<RunnerTypes> {
         type: 'tool_result',
         tool_use_id: part.toolResponse.ref,
         content: [this.toAnthropicToolResponseContent(part)],
-        cache_control: part.metadata?.cache_control as
-          | ToolResultBlockParam['cache_control']
-          | null,
+        cache_control: part.metadata
+          ?.cache_control as ToolResultBlockParam['cache_control'],
       };
     }
 
@@ -301,7 +296,6 @@ export class Runner extends BaseRunner<RunnerTypes> {
     body: MessageCreateParamsNonStreaming,
     abortSignal: AbortSignal
   ): Promise<Message> {
-    console.log('body in createMessage', JSON.stringify(body, null, 2));
     return await this.client.messages.create(body, { signal: abortSignal });
   }
 
