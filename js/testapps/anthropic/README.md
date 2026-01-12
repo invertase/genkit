@@ -42,6 +42,7 @@ src/
 - `pnpm run dev:stable:webp` – Start Dev UI for WEBP image handling demo.
 - `pnpm run dev:stable:pdf` – Start Dev UI for PDF document processing demo.
 - `pnpm run dev:stable:vision` – Start Dev UI for image/vision analysis demo.
+- `pnpm run dev:stable:web-search-tool` – Start Dev UI for web search tool demo.
 
 ## Flows
 
@@ -71,5 +72,9 @@ Each source file defines flows that can be invoked from the Dev UI or the Genkit
 - `stable-vision-url` – Analyze an image from a public URL
 - `stable-vision-base64` – Analyze an image from a local file (base64 encoded)
 - `stable-vision-conversation` – Multi-turn conversation about an image
+
+### Web Search Tool
+- `stable-web-search-tool` – Use the web search tool to find the weather in Tokyo
+- `stable-web-search-tool-stream` – Streaming response with web search tool
 
 Example: `genkit flow:run anthropic-stable-hello`
