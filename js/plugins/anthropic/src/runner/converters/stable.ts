@@ -30,7 +30,6 @@ export function serverToolUseBlockToPart(block: {
   input: unknown;
 }): Part {
   return {
-    text: `[Anthropic server tool ${block.name}] input: ${JSON.stringify(block.input)}`,
     metadata: {
       anthropicServerToolUse: {
         id: block.id,

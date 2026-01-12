@@ -95,6 +95,21 @@ The beta API surface provides access to experimental features, but some server-m
 
 Note that `server_tool_use` and `web_search_tool_result` ARE supported and work with both stable and beta APIs.
 
+### Web Search Tool
+
+You can use Anthropic's web search tool by defining the tool in the prompt.
+
+```typescript
+const response = await ai.generate({
+  prompt: 'What is the weather in Tokyo?',
+  config: {
+    tools: [{ type: 'web_search_20250305', name: 'web_search' }],
+  },
+});
+```
+
+By default, the tool will only be used if it matches the user's prompt. You can override this behavior by modifying the `tool_choice` config option.
+
 ### Within a flow
 
 ```typescript
