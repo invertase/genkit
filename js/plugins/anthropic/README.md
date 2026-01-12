@@ -81,6 +81,27 @@ console.log(response.reasoning);  // Summarized thinking steps
 
 When thinking is enabled, request bodies sent through the plugin include the `thinking` payload (`{ type: 'enabled', budget_tokens: … }`) that Anthropic's API expects, and streamed responses deliver `reasoning` parts as they arrive so you can render the chain-of-thought incrementally.
 
+### Prompt Caching
+
+You can cache prompts by adding `cache_control` metadata to the prompt. You can define this for system messages, user messages, tools, and media.
+
+```typescript
+const response = await ai.generate({
+  prompt: 'What is the weather in Tokyo?',
+  messages: [
+    {
+      role: 'user',
+      content: [{ text: 'What is the main idea of the text?' }],
+      metadata: {
+        cache_control: { type: 'ephemeral', ttl: '5m' }, // TTL options of either '5m' or '1h'
+      },
+    },
+  ],
+});
+```
+
+Note: Caching is only used when the prompt exceeds a certain token length. This token length is documented in the [Anthropic API documentation](https://platform.claude.com/docs/en/build-with-claude/prompt-caching).
+
 ### Beta API Limitations
 
 The beta API surface provides access to experimental features, but some server-managed tool blocks are not yet supported by this plugin. The following beta API features will cause an error if encountered:
