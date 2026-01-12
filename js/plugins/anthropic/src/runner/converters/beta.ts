@@ -35,7 +35,6 @@ export function betaServerToolUseBlockToPart(block: {
     ? `${block.server_name}/${baseName}`
     : baseName;
   return {
-    text: `[Anthropic server tool ${serverToolName}] input: ${JSON.stringify(block.input)}`,
     metadata: {
       anthropicServerToolUse: {
         id: block.id,

@@ -76,7 +76,6 @@ export function webSearchToolResultBlockToPart(block: {
   content: unknown;
 }): Part {
   return {
-    text: `[Anthropic server tool result ${block.tool_use_id}] ${JSON.stringify(block.content)}`,
     metadata: {
       anthropicServerToolResult: {
         type: 'web_search_tool_result',
