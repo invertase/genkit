@@ -320,7 +320,6 @@ describe('BetaRunner', () => {
     } as any;
     const toolPart = exposed.toGenkitPart(serverToolEvent);
     assert.deepStrictEqual(toolPart, {
-      text: '[Anthropic server tool srv/myTool] input: {"foo":"bar"}',
       metadata: {
         anthropicServerToolUse: {
           id: 'toolu_test',
@@ -765,7 +764,6 @@ describe('BetaRunner', () => {
       server_name: 'srv',
     });
     assert.deepStrictEqual(serverToolPart, {
-      text: '[Anthropic server tool srv/serverTool] input: {"arg":"value"}',
       metadata: {
         anthropicServerToolUse: {
           id: 'srv_tool_1',
