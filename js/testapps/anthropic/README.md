@@ -36,12 +36,17 @@ src/
 - `pnpm run start:beta` – Run the compiled beta basic sample.
 - `pnpm run dev:stable` – Start the Genkit Dev UI over `src/stable/basic.ts` with live reload.
 - `pnpm run dev:beta` – Start the Genkit Dev UI over `src/beta/basic.ts` with live reload.
+- `pnpm run dev:beta:additional-params` – Start Dev UI for additional beta parameters demo.
+- `pnpm run dev:beta:effort` – Start Dev UI for beta effort levels demo.
+- `pnpm run dev:beta:files-api` – Start Dev UI for beta files API demo.
+- `pnpm run dev:beta:structured-output` – Start Dev UI for beta structured output demo.
 
 ### Feature-Specific Examples
 - `pnpm run dev:stable:text-plain` – Start Dev UI for text/plain error handling demo.
 - `pnpm run dev:stable:webp` – Start Dev UI for WEBP image handling demo.
 - `pnpm run dev:stable:pdf` – Start Dev UI for PDF document processing demo.
 - `pnpm run dev:stable:vision` – Start Dev UI for image/vision analysis demo.
+- `pnpm run dev:stable:tools` – Start Dev UI for tool/function calling demo.
 
 ## Flows
 
@@ -71,5 +76,24 @@ Each source file defines flows that can be invoked from the Dev UI or the Genkit
 - `stable-vision-url` – Analyze an image from a public URL
 - `stable-vision-base64` – Analyze an image from a local file (base64 encoded)
 - `stable-vision-conversation` – Multi-turn conversation about an image
+
+### Tool Usage
+- `anthropic-stable-tools` – Demonstrates tool/function calling with a weather Genkit tool
+
+### Beta API - Additional Parameters
+- `anthropic-beta-additional-params` – Pass custom parameters (betas, output_config) to the beta API
+- `anthropic-beta-additional-params-stream` – Streaming with additional beta parameters
+
+### Beta API - Effort Levels
+- `anthropic-beta-low-effort` – Generate a Python class using low effort configuration
+- `anthropic-beta-medium-effort` – Generate a Python class using medium effort configuration
+- `anthropic-beta-high-effort` – Generate a Python class using high effort configuration
+
+### Beta API - Files API
+- `beta-pdf-url` – Process a PDF document using Anthropic's Files API
+
+### Beta API - Structured Output
+- `anthropic-beta-generate-person-json` – Generate structured JSON output with constrained schema
+- `anthropic-beta-generate-person-json-stream` – Streaming structured JSON generation
 
 Example: `genkit flow:run anthropic-stable-hello`
