@@ -1214,11 +1214,11 @@ describe('toAnthropicStreamingRequestBody', () => {
       output: { format: 'text' },
     };
 
-    const outputWithCaching = testRunner.toAnthropicStreamingRequestBody(
+    const output = testRunner.toAnthropicStreamingRequestBody(
       'claude-3-5-haiku',
       request
     );
-    assert.deepStrictEqual(outputWithCaching.system, [
+    assert.deepStrictEqual(output.system, [
       {
         type: 'text',
         text: 'You are a helpful assistant',
@@ -1226,21 +1226,7 @@ describe('toAnthropicStreamingRequestBody', () => {
         citations: null,
       },
     ]);
-    assert.strictEqual(outputWithCaching.stream, true);
-
-    const outputWithoutCaching = testRunner.toAnthropicStreamingRequestBody(
-      'claude-3-5-haiku',
-      request
-    );
-    assert.deepStrictEqual(outputWithoutCaching.system, [
-      {
-        type: 'text',
-        text: 'You are a helpful assistant',
-        citations: null,
-        cache_control: { type: 'ephemeral' },
-      },
-    ]);
-    assert.strictEqual(outputWithoutCaching.stream, true);
+    assert.strictEqual(output.stream, true);
   });
 });
 
