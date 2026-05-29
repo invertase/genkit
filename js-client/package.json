@@ -1,0 +1,28 @@
+{
+  "name": "genkit-js-client",
+  "private": true,
+  "scripts": {
+    "preinstall": "npx only-allow pnpm",
+    "build": "pnpm -r build",
+    "test": "pnpm -r test",
+    "test:unit": "pnpm --filter @genkit-ai/client test:unit",
+    "test:integration": "pnpm --filter @genkit-ai/client test:integration",
+    "check": "pnpm -r check",
+    "dev:server": "pnpm --filter @genkit-ai/client-test-server start",
+    "dev:vite-react": "pnpm --filter @genkit-ai/client-vite-react-example dev",
+    "build:vite-react": "pnpm --filter @genkit-ai/client-vite-react-example build"
+  },
+  "devDependencies": {
+    "only-allow": "^1.2.1",
+    "typescript": "^5.9.3"
+  },
+  "pnpm": {
+    "overrides": {
+      "genkit": "link:../js/genkit",
+      "@genkit-ai/core": "link:../js/core",
+      "@genkit-ai/fetch": "link:../js/plugins/fetch",
+      "@genkit-ai/ai": "link:../js/ai"
+    }
+  },
+  "packageManager": "pnpm@10.27.0+sha512.72d699da16b1179c14ba9e64dc71c9a40988cbdc65c264cb0e489db7de917f20dcf4d64d8723625f2969ba52d4b7e2a1170682d9ac2a5dcaeaab732b7e16f04a"
+}
