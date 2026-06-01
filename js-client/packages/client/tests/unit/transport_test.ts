@@ -105,4 +105,3 @@ describe('CallableTransport', () => {
     assert.equal(signal, controller.signal);
   });
 });
-

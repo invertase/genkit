@@ -17,17 +17,10 @@
 import type { Action, z } from 'genkit';
 
 export type Input<A extends Action> =
-  A extends Action<infer I extends z.ZodTypeAny, any, any>
-    ? z.infer<I>
-    : never;
+  A extends Action<infer I extends z.ZodTypeAny, any, any> ? z.infer<I> : never;
 
 export type Output<A extends Action> =
-  A extends Action<any, infer O extends z.ZodTypeAny, any>
-    ? z.infer<O>
-    : never;
+  A extends Action<any, infer O extends z.ZodTypeAny, any> ? z.infer<O> : never;
 
 export type StreamChunk<A extends Action> =
-  A extends Action<any, any, infer S extends z.ZodTypeAny>
-    ? z.infer<S>
-    : never;
-
+  A extends Action<any, any, infer S extends z.ZodTypeAny> ? z.infer<S> : never;

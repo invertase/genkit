@@ -30,12 +30,13 @@ export function runFlow<TOutput = unknown, TInput = unknown>(
 }
 
 /** @deprecated Use {@link streamAction}. */
-export function streamFlow<TOutput = unknown, TChunk = unknown, TInput = unknown>(
-  req: StreamActionRequest<TInput>
-): StreamActionResult<TOutput, TChunk> {
+export function streamFlow<
+  TOutput = unknown,
+  TChunk = unknown,
+  TInput = unknown,
+>(req: StreamActionRequest<TInput>): StreamActionResult<TOutput, TChunk> {
   return streamAction(req as StreamActionRequest) as StreamActionResult<
     TOutput,
     TChunk
   >;
 }
-

@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+export type { Action } from 'genkit';
 export { runFlow, streamFlow } from './aliases.js';
 export {
   createGenkitClient,
@@ -26,19 +27,22 @@ export {
   type StreamActionResult,
 } from './client.js';
 export {
-  extractWireError,
   GenkitClientError,
+  extractWireError,
   isHttpErrorWireFormat,
   statusNameFromHttpStatus,
   type GenkitClientErrorOptions,
 } from './errors.js';
+export {
+  parseResponse,
+  type CallableEnvelope,
+} from './protocol/parse-response.js';
 export {
   parseStreamEvent,
   parseStreamResponse,
   type ParsedStreamEvent,
   type StreamEnvelope,
 } from './protocol/parse-stream.js';
-export { parseResponse, type CallableEnvelope } from './protocol/parse-response.js';
 export {
   CallableTransport,
   resolveUrl,
@@ -46,6 +50,4 @@ export {
   type HeaderProvider,
 } from './transport/callable-transport.js';
 export type { Transport, TransportRequest } from './transport/types.js';
-export type { Action } from 'genkit';
 export type { Input, Output, StreamChunk } from './types/action.js';
-

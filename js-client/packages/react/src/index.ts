@@ -20,6 +20,12 @@ export {
   type GenkitClientProviderProps,
 } from './context.js';
 export {
+  createStreamExecutor,
+  type ActionStatus,
+  type StreamExecutor,
+  type StreamState,
+} from './internal/stream-state.js';
+export {
   useAction,
   type UseActionOptions,
   type UseActionResult,
@@ -29,10 +35,3 @@ export {
   type UseStreamOptions,
   type UseStreamResult,
 } from './use-stream.js';
-export {
-  createStreamExecutor,
-  type ActionStatus,
-  type StreamExecutor,
-  type StreamState,
-} from './internal/stream-state.js';
-

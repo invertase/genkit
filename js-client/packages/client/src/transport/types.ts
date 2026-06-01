@@ -26,4 +26,3 @@ export interface TransportRequest {
 export interface Transport {
   request(options: TransportRequest): Promise<Response>;
 }
-

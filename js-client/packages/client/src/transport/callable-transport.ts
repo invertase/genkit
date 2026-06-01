@@ -100,4 +100,3 @@ function isAbsoluteUrl(value: string): boolean {
     return false;
   }
 }
-

@@ -16,18 +16,8 @@
 
 'use client';
 
-import {
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-} from 'react';
-import type {
-  Action,
-  GenkitClient,
-  Input,
-  Output,
-} from '@genkit-ai/client';
+import type { Action, GenkitClient, Input, Output } from '@genkit-ai/client';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useGenkitClient } from './context.js';
 import { isAbortError } from './internal/abort-error.js';
 

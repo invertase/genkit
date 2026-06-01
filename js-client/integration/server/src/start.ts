@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import { createTestApp } from './index.js';
 import { serve } from '@hono/node-server';
+import { createTestApp } from './index.js';
 
 const port = Number(process.env.PORT) || 3781;
 const app = createTestApp();

@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
+import { startTestServer } from '@genkit-ai/client-test-server';
 import assert from 'node:assert/strict';
 import { after, before, describe, it } from 'node:test';
-import { startTestServer } from '@genkit-ai/client-test-server';
 import {
-  createGenkitClient,
   GenkitClientError,
+  createGenkitClient,
   type GenkitClient,
 } from '../../src/index.js';
 
@@ -114,4 +114,3 @@ describe('@genkit-ai/client integration', () => {
     );
   });
 });
-

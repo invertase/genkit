@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-import './setup.js';
+import { GenkitClientError } from '@genkit-ai/client';
+import { act, renderHook, waitFor } from '@testing-library/react';
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import { act, renderHook, waitFor } from '@testing-library/react';
-import { GenkitClientError } from '@genkit-ai/client';
 import { useStream } from '../src/index.js';
+import './setup.js';
 import { clientFor, streamResponse, wrapperFor } from './test-utils.js';
 
 describe('useStream', () => {
@@ -103,4 +103,3 @@ describe('useStream', () => {
     assert.equal(result.current.status, 'idle');
   });
 });
-

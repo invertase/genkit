@@ -14,10 +14,7 @@
  * limitations under the License.
  */
 
-import type {
-  GenkitClient,
-  StreamActionResult,
-} from '@genkit-ai/client';
+import type { GenkitClient, StreamActionResult } from '@genkit-ai/client';
 import { isAbortError } from './abort-error.js';
 
 export type ActionStatus = 'idle' | 'loading' | 'streaming' | 'error';
@@ -162,4 +159,3 @@ function initialState<TChunk, TOutput>(): StreamState<TChunk, TOutput> {
     streamId: null,
   };
 }
-

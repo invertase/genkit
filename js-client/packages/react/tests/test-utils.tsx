@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-import React, { type ReactNode } from 'react';
 import {
   createGenkitClient,
   type GenkitClient,
   type Transport,
   type TransportRequest,
 } from '@genkit-ai/client';
+import { type ReactNode } from 'react';
 import { GenkitClientProvider } from '../src/index.js';
 
 export interface Deferred<T> {

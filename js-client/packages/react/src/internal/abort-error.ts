@@ -20,4 +20,3 @@ export function isAbortError(error: unknown): boolean {
     (error.name === 'AbortError' || error.code === DOMException.ABORT_ERR)
   );
 }
-

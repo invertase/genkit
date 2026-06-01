@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-import { useMemo, useState, type FormEvent } from 'react';
-import { GenkitClientProvider, useAction, useStream } from '@genkit-ai/react';
 import type { GenkitClientOptions } from '@genkit-ai/client';
+import { GenkitClientProvider, useAction, useStream } from '@genkit-ai/react';
+import { useMemo, useState, type FormEvent } from 'react';
 
 const defaultServerUrl =
   import.meta.env.VITE_GENKIT_BASE_URL ?? 'http://127.0.0.1:3781';
@@ -91,10 +91,7 @@ function EchoExample() {
       <PanelHeader title="Echo" status={statusText(isLoading, error, data)} />
       <label>
         Text
-        <input
-          value={text}
-          onChange={(event) => setText(event.target.value)}
-        />
+        <input value={text} onChange={(event) => setText(event.target.value)} />
       </label>
       <div className="actions">
         <button disabled={isLoading}>Run</button>
@@ -150,16 +147,8 @@ function AddExample() {
 
 function CountStreamExample() {
   const [to, setTo] = useState(5);
-  const {
-    execute,
-    abort,
-    reset,
-    chunks,
-    data,
-    error,
-    isStreaming,
-    streamId,
-  } = useStream({ url: '/countStream' });
+  const { execute, abort, reset, chunks, data, error, isStreaming, streamId } =
+    useStream({ url: '/countStream' });
 
   function onSubmit(event: FormEvent) {
     event.preventDefault();
@@ -194,8 +183,7 @@ function CountStreamExample() {
           type="button"
           className="secondary"
           disabled={!isStreaming}
-          onClick={abort}
-        >
+          onClick={abort}>
           Abort
         </button>
         <button type="button" className="secondary" onClick={reset}>
@@ -237,10 +225,7 @@ function SecureEchoExample() {
       />
       <label>
         Text
-        <input
-          value={text}
-          onChange={(event) => setText(event.target.value)}
-        />
+        <input value={text} onChange={(event) => setText(event.target.value)} />
       </label>
       <div className="actions">
         <button disabled={isLoading}>Run Secure</button>

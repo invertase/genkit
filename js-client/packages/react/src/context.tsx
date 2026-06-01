@@ -17,17 +17,17 @@
 'use client';
 
 import {
-  createElement,
-  createContext,
-  useContext,
-  useMemo,
-  type ReactNode,
-} from 'react';
-import {
   createGenkitClient,
   type GenkitClient,
   type GenkitClientOptions,
 } from '@genkit-ai/client';
+import {
+  createContext,
+  createElement,
+  useContext,
+  useMemo,
+  type ReactNode,
+} from 'react';
 
 const defaultClient = createGenkitClient();
 const GenkitClientContext = createContext<GenkitClient | undefined>(undefined);
@@ -47,11 +47,7 @@ export function GenkitClientProvider({
     () => client ?? createGenkitClient(config),
     [client, config]
   );
-  return createElement(
-    GenkitClientContext.Provider,
-    { value },
-    children
-  );
+  return createElement(GenkitClientContext.Provider, { value }, children);
 }
 
 export function useGenkitClient(): GenkitClient {

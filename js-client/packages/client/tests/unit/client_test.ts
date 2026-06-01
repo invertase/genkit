@@ -17,8 +17,8 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 import {
-  createGenkitClient,
   GenkitClientError,
+  createGenkitClient,
   runFlow,
   streamFlow,
 } from '../../src/index.js';
@@ -117,4 +117,3 @@ describe('createGenkitClient', () => {
     }
   });
 });
-

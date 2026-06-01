@@ -55,11 +55,12 @@ const invalidOutput: Output<typeof greetingFlow> = { text: 'Hello' };
 void invalidInput;
 void invalidOutput;
 
-const outputPromise: Promise<{ greeting: string }> =
-  runAction<typeof greetingFlow>({
-    url: '/api/greeting',
-    input: { name: 'World' },
-  });
+const outputPromise: Promise<{ greeting: string }> = runAction<
+  typeof greetingFlow
+>({
+  url: '/api/greeting',
+  input: { name: 'World' },
+});
 
 void outputPromise;
 
@@ -79,4 +80,3 @@ const chunkStream: AsyncIterable<string> = streaming.stream;
 
 void streamOutput;
 void chunkStream;
-

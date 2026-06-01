@@ -74,4 +74,3 @@ export async function parseResponse<TOutput>(
     traceId: response.headers.get('x-genkit-trace-id') ?? undefined,
   });
 }
-

@@ -17,8 +17,8 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 import {
-  extractWireError,
   GenkitClientError,
+  extractWireError,
   isHttpErrorWireFormat,
   statusNameFromHttpStatus,
 } from '../../src/index.js';
@@ -105,4 +105,3 @@ describe('GenkitClientError', () => {
     assert.equal(statusNameFromHttpStatus(418), 'UNKNOWN');
   });
 });
-

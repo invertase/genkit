@@ -44,4 +44,3 @@ Object.defineProperty(globalThis, 'MouseEvent', {
   value: dom.window.MouseEvent,
   writable: true,
 });
-

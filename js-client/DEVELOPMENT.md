@@ -29,12 +29,12 @@ gantt
   React README + tests       :p3c, after p3b, 5d
 ```
 
-| Phase | Duration (est.) | Outcome |
-| --- | --- | --- |
-| **0** | 1–2 weeks | Workspace + headless client with unit tests |
-| **1** | 1–2 weeks | Structured errors, transport, Hono integration tests |
-| **2** | 1 week | Type inference + client README/docs |
-| **3** | 2 weeks | React hooks (`useAction`, `useStream`) + tests |
+| Phase | Duration (est.) | Outcome                                              |
+| ----- | --------------- | ---------------------------------------------------- |
+| **0** | 1–2 weeks       | Workspace + headless client with unit tests          |
+| **1** | 1–2 weeks       | Structured errors, transport, Hono integration tests |
+| **2** | 1 week          | Type inference + client README/docs                  |
+| **3** | 2 weeks         | React hooks (`useAction`, `useStream`) + tests       |
 
 ---
 
@@ -133,12 +133,12 @@ Add to `js-client/package.json`:
 
 **Implement in `packages/client/src/`:**
 
-| Module | Responsibility |
-| --- | --- |
-| `protocol/parse-stream.ts` | Parse SSE-style `data: {...}\n\n` chunks; yield `message`, `result`, or throw on `error` |
-| `protocol/parse-response.ts` | Parse non-stream `{ result }` / `{ error }` JSON |
-| `client.ts` | `runAction`, `streamAction`, `createGenkitClient` |
-| `index.ts` | Public exports + deprecated `runFlow`/`streamFlow` aliases |
+| Module                       | Responsibility                                                                           |
+| ---------------------------- | ---------------------------------------------------------------------------------------- |
+| `protocol/parse-stream.ts`   | Parse SSE-style `data: {...}\n\n` chunks; yield `message`, `result`, or throw on `error` |
+| `protocol/parse-response.ts` | Parse non-stream `{ result }` / `{ error }` JSON                                         |
+| `client.ts`                  | `runAction`, `streamAction`, `createGenkitClient`                                        |
+| `index.ts`                   | Public exports + deprecated `runFlow`/`streamFlow` aliases                               |
 
 **API surface (Phase 0):**
 
@@ -146,7 +146,11 @@ Add to `js-client/package.json`:
 // packages/client/src/index.ts
 export { createGenkitClient, runAction, streamAction } from './client.js';
 export { runFlow, streamFlow } from './aliases.js'; // deprecated, re-export runAction/streamAction
-export type { RunActionRequest, StreamActionResult, GenkitClientOptions } from './client.js';
+export type {
+  RunActionRequest,
+  StreamActionResult,
+  GenkitClientOptions,
+} from './client.js';
 ```
 
 **Behavior parity checklist** (must match existing client):
@@ -186,7 +190,12 @@ export type { RunActionRequest, StreamActionResult, GenkitClientOptions } from '
 
 ```typescript
 export class MockTransport implements Transport {
-  constructor(private readonly handlers: Record<string, (req: RequestInit) => Response | Promise<Response>>) {}
+  constructor(
+    private readonly handlers: Record<
+      string,
+      (req: RequestInit) => Response | Promise<Response>
+    >
+  ) {}
   async fetch(url: string, init: RequestInit): Promise<Response> {
     const handler = this.handlers[url] ?? this.handlers['*'];
     if (!handler) throw new Error(`No mock handler for ${url}`);
@@ -197,11 +206,11 @@ export class MockTransport implements Transport {
 
 **Test files:**
 
-| File | Cases |
-| --- | --- |
-| `parse-stream_test.ts` | Single chunk; multi-chunk buffer; partial delimiter; `message`/`result`/`error` chunks; unknown format |
-| `parse-response_test.ts` | `{ result }` success; `{ error: string }`; `{ error: HttpErrorWireFormat }` |
-| `client_test.ts` | `runAction` happy path via MockTransport; stream yields messages then resolves output; abort cancels |
+| File                     | Cases                                                                                                  |
+| ------------------------ | ------------------------------------------------------------------------------------------------------ |
+| `parse-stream_test.ts`   | Single chunk; multi-chunk buffer; partial delimiter; `message`/`result`/`error` chunks; unknown format |
+| `parse-response_test.ts` | `{ result }` success; `{ error: string }`; `{ error: HttpErrorWireFormat }`                            |
+| `client_test.ts`         | `runAction` happy path via MockTransport; stream yields messages then resolves output; abort cancels   |
 
 **Run:**
 
@@ -236,7 +245,10 @@ export class GenkitClientError extends Error {
   readonly httpStatus?: number;
   readonly traceId?: string;
 
-  static fromWire(error: HttpErrorWireFormat, response?: Response): GenkitClientError;
+  static fromWire(
+    error: HttpErrorWireFormat,
+    response?: Response
+  ): GenkitClientError;
   static fromResponse(response: Response, body: string): GenkitClientError;
 }
 ```
@@ -286,13 +298,13 @@ export class CallableTransport implements Transport {
 
 Deterministic flows — **no LLM, no API keys**:
 
-| Flow | Input | Output | Stream chunks |
-| --- | --- | --- | --- |
-| `echo` | `{ text: string }` | `{ text: string }` | — |
-| `add` | `{ a: number, b: number }` | `{ sum: number }` | — |
-| `countStream` | `{ to: number }` | `{ count: number }` | `number` (1..to) |
-| `secureEcho` | `{ text: string }` | `{ text: string }` | — (requires `Authorization: Bearer test-token`) |
-| `failWithStatus` | `{ status: StatusName }` | — | throws `UserFacingError` |
+| Flow             | Input                      | Output              | Stream chunks                                   |
+| ---------------- | -------------------------- | ------------------- | ----------------------------------------------- |
+| `echo`           | `{ text: string }`         | `{ text: string }`  | —                                               |
+| `add`            | `{ a: number, b: number }` | `{ sum: number }`   | —                                               |
+| `countStream`    | `{ to: number }`           | `{ count: number }` | `number` (1..to)                                |
+| `secureEcho`     | `{ text: string }`         | `{ text: string }`  | — (requires `Authorization: Bearer test-token`) |
+| `failWithStatus` | `{ status: StatusName }`   | —                   | throws `UserFacingError`                        |
 
 **Server setup** (based on `js/testapps/hono/src/index.ts`):
 
@@ -311,7 +323,10 @@ export { app, startTestServer }; // startTestServer(port?) for tests
 
 ```typescript
 // integration/server/src/index.ts
-export async function startTestServer(): Promise<{ url: string; close: () => void }>;
+export async function startTestServer(): Promise<{
+  url: string;
+  close: () => void;
+}>;
 ```
 
 Use `get-port` for ephemeral port allocation (pattern from `js/plugins/fetch/tests/web_test.ts`).
@@ -337,14 +352,14 @@ after(() => close());
 
 **Test cases:**
 
-| Test | Validates |
-| --- | --- |
-| `runAction echo` | Non-stream round-trip |
-| `runAction add` | Typed JSON input/output |
-| `streamAction countStream` | Chunk sequence + final output |
-| `streamAction abort mid-stream` | AbortSignal stops fetch |
-| `runAction secureEcho without auth` | `GenkitClientError` with `PERMISSION_DENIED` |
-| `runAction failWithStatus` | Error wire format parsing |
+| Test                                                | Validates                                                 |
+| --------------------------------------------------- | --------------------------------------------------------- |
+| `runAction echo`                                    | Non-stream round-trip                                     |
+| `runAction add`                                     | Typed JSON input/output                                   |
+| `streamAction countStream`                          | Chunk sequence + final output                             |
+| `streamAction abort mid-stream`                     | AbortSignal stops fetch                                   |
+| `runAction secureEcho without auth`                 | `GenkitClientError` with `PERMISSION_DENIED`              |
+| `runAction failWithStatus`                          | Error wire format parsing                                 |
 | `streamAction reconnect` (optional Phase 1 stretch) | `streamId` header round-trip with `InMemoryStreamManager` |
 
 **Run:**
@@ -419,7 +434,10 @@ In `js/genkit/src/client/client.ts`:
 
 ```typescript
 /** @deprecated Use `@genkit-ai/client` runAction instead */
-export { runAction as runFlow, streamAction as streamFlow } from '@genkit-ai/client';
+export {
+  runAction as runFlow,
+  streamAction as streamFlow,
+} from '@genkit-ai/client';
 ```
 
 Or keep inline implementation until `@genkit-ai/client` is published, then switch re-exports.
@@ -472,7 +490,13 @@ This keeps Vue/Svelte adapters (future) from duplicating stream lifecycle logic.
 'use client'; // documented for Next.js App Router consumers
 
 export const GenkitClientContext = createContext<GenkitClient>(defaultClient);
-export function GenkitClientProvider({ client, children }: { client?: GenkitClient; children: ReactNode });
+export function GenkitClientProvider({
+  client,
+  children,
+}: {
+  client?: GenkitClient;
+  children: ReactNode;
+});
 export function useGenkitClient(): GenkitClient;
 ```
 
@@ -544,11 +568,11 @@ export function useStream<A extends Action>(options: {
 
 **Test strategy:**
 
-| File | Approach |
-| --- | --- |
-| `use-action_test.tsx` | Render hook with `MockTransport`; assert loading → data transitions |
-| `use-stream_test.tsx` | Mock stream responses; assert chunk accumulation + final data |
-| `use-action.integration_test.tsx` | Optional: render + call against `startTestServer()` |
+| File                              | Approach                                                            |
+| --------------------------------- | ------------------------------------------------------------------- |
+| `use-action_test.tsx`             | Render hook with `MockTransport`; assert loading → data transitions |
+| `use-stream_test.tsx`             | Mock stream responses; assert chunk accumulation + final data       |
+| `use-action.integration_test.tsx` | Optional: render + call against `startTestServer()`                 |
 
 **Run:**
 
@@ -605,14 +629,14 @@ export function Greeting() {
 
 These are documented in [CLIENT.md](../CLIENT.md) but intentionally out of scope for the initial `js-client` workspace:
 
-| Item | Target phase |
-| --- | --- |
-| `useChat`, `useObject`, `useCompletion` | Phase 4 |
-| Codegen (`genkit client:generate`) | Phase 4 |
-| Vue / Svelte / Angular adapters | Phase 5 |
-| Durable stream reconnect UX in hooks | Phase 4 |
-| `ReflectionTransport` (dev `/api/runAction`) | Phase 5 |
-| Retry policy on transport | Phase 4 |
+| Item                                         | Target phase |
+| -------------------------------------------- | ------------ |
+| `useChat`, `useObject`, `useCompletion`      | Phase 4      |
+| Codegen (`genkit client:generate`)           | Phase 4      |
+| Vue / Svelte / Angular adapters              | Phase 5      |
+| Durable stream reconnect UX in hooks         | Phase 4      |
+| `ReflectionTransport` (dev `/api/runAction`) | Phase 5      |
+| Retry policy on transport                    | Phase 4      |
 
 ---
 
@@ -639,22 +663,26 @@ Add to root `package.json` when client is ready for CI:
 ## Implementation checklist (copy for tracking)
 
 ### Phase 0
+
 - [x] 0.1 Workspace bootstrap
 - [x] 0.2 Extract client API
 - [x] 0.3 Unit tests + MockTransport
 
 ### Phase 1
+
 - [x] 1.1 GenkitClientError
 - [x] 1.2 CallableTransport
 - [x] 1.3 Integration server (Hono)
 - [x] 1.4 Integration tests
 
 ### Phase 2
+
 - [x] 2.1 Action type inference
 - [x] 2.2 Client README
 - [x] 2.3 Deprecation / re-export plan
 
 ### Phase 3
+
 - [x] 3.1 Stream state machine
 - [x] 3.2 GenkitClientProvider
 - [x] 3.3 useAction
@@ -666,11 +694,11 @@ Add to root `package.json` when client is ready for CI:
 
 ## References
 
-| Resource | Path |
-| --- | --- |
-| Strategic foundation | [CLIENT.md](../CLIENT.md) |
-| Current client (source) | `js/genkit/src/client/client.ts` |
-| Next.js typed wrapper | `js/plugins/next/src/client.ts` |
-| Fetch handler + tests | `js/plugins/fetch/src/index.ts`, `tests/web_test.ts` |
-| Hono sample app | `js/testapps/hono/src/index.ts` |
-| Error wire format | `js/core/src/error.ts` |
+| Resource                | Path                                                 |
+| ----------------------- | ---------------------------------------------------- |
+| Strategic foundation    | [CLIENT.md](../CLIENT.md)                            |
+| Current client (source) | `js/genkit/src/client/client.ts`                     |
+| Next.js typed wrapper   | `js/plugins/next/src/client.ts`                      |
+| Fetch handler + tests   | `js/plugins/fetch/src/index.ts`, `tests/web_test.ts` |
+| Hono sample app         | `js/testapps/hono/src/index.ts`                      |
+| Error wire format       | `js/core/src/error.ts`                               |

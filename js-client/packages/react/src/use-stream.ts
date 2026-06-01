@@ -16,12 +16,6 @@
 
 'use client';
 
-import {
-  useCallback,
-  useEffect,
-  useMemo,
-  useSyncExternalStore,
-} from 'react';
 import type {
   Action,
   GenkitClient,
@@ -29,6 +23,7 @@ import type {
   Output,
   StreamChunk,
 } from '@genkit-ai/client';
+import { useCallback, useEffect, useMemo, useSyncExternalStore } from 'react';
 import { useGenkitClient } from './context.js';
 import {
   createStreamExecutor,
@@ -94,4 +89,3 @@ export function useStream<A extends Action = Action>(
     streamId: state.streamId,
   };
 }
-

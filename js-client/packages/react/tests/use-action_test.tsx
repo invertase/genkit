@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-import './setup.js';
+import { GenkitClientError } from '@genkit-ai/client';
+import { act, renderHook } from '@testing-library/react';
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import { act, renderHook } from '@testing-library/react';
-import { GenkitClientError } from '@genkit-ai/client';
 import { useAction } from '../src/index.js';
+import './setup.js';
 import { clientFor, deferred, wrapperFor } from './test-utils.js';
 
 describe('useAction', () => {
@@ -91,4 +91,3 @@ describe('useAction', () => {
     assert.equal(result.current.isLoading, false);
   });
 });
-

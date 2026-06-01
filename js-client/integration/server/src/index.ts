@@ -15,14 +15,9 @@
  */
 
 import { fetchHandlers, withActionOptions } from '@genkit-ai/fetch';
-import { serve } from '@hono/node-server';
 import type { ServerType } from '@hono/node-server';
-import {
-  genkit,
-  UserFacingError,
-  z,
-  type StatusName,
-} from 'genkit';
+import { serve } from '@hono/node-server';
+import { UserFacingError, genkit, z, type StatusName } from 'genkit';
 import type { ContextProvider } from 'genkit/context';
 import getPort from 'get-port';
 import { Hono } from 'hono';
@@ -128,9 +123,7 @@ export function createTestApp() {
   app.get('/', (c) =>
     c.json({
       message: 'Genkit client integration test server',
-      actions: testActions.map((a) =>
-        'action' in a ? a.action.name : a.name
-      ),
+      actions: testActions.map((a) => ('action' in a ? a.action.name : a.name)),
     })
   );
   app.all('/api/*', (c) => fetchHandlers(testActions, '/api')(c.req.raw));

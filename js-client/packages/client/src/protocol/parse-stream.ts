@@ -14,10 +14,7 @@
  * limitations under the License.
  */
 
-import {
-  GenkitClientError,
-  isHttpErrorWireFormat,
-} from '../errors.js';
+import { GenkitClientError, isHttpErrorWireFormat } from '../errors.js';
 
 const streamDelimiter = '\n\n';
 
@@ -192,4 +189,3 @@ function extractPayload(event: string): string {
     message: `Unknown stream event format: ${event}`,
   });
 }
-

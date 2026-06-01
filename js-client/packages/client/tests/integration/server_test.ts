@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
+import { startTestServer } from '@genkit-ai/client-test-server';
 import assert from 'node:assert/strict';
 import { after, before, describe, it } from 'node:test';
-import { startTestServer } from '@genkit-ai/client-test-server';
 
 describe('integration server (Phase 1 prerequisite)', () => {
   let baseUrl: string;
