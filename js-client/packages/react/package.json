@@ -1,0 +1,48 @@
+{
+  "name": "@genkit-ai/react",
+  "description": "React hooks for invoking Genkit actions from the browser.",
+  "version": "0.1.0",
+  "type": "commonjs",
+  "scripts": {
+    "check": "tsc",
+    "compile": "tsup-node",
+    "build:clean": "rimraf ./lib",
+    "build": "npm-run-all build:clean check compile",
+    "test": "node --loader tsx --test tests/*_test.tsx"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/genkit-ai/genkit.git",
+    "directory": "js-client/packages/react"
+  },
+  "license": "Apache-2.0",
+  "peerDependencies": {
+    "@genkit-ai/client": "workspace:^",
+    "react": "^18.0.0 || ^19.0.0"
+  },
+  "devDependencies": {
+    "@genkit-ai/client": "workspace:*",
+    "@testing-library/dom": "^10.4.0",
+    "@testing-library/react": "^16.3.0",
+    "@types/node": "^22.15.3",
+    "@types/react": "^19.1.2",
+    "@types/react-dom": "^19.1.2",
+    "jsdom": "^25.0.1",
+    "npm-run-all": "^4.1.5",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "rimraf": "^6.0.1",
+    "tsup": "^8.3.5",
+    "tsx": "^4.19.2",
+    "typescript": "^5.9.3"
+  },
+  "types": "./lib/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./lib/index.d.ts",
+      "import": "./lib/index.mjs",
+      "require": "./lib/index.js",
+      "default": "./lib/index.js"
+    }
+  }
+}

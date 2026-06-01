@@ -1,0 +1,27 @@
+{
+  "name": "@genkit-ai/client-test-server",
+  "description": "Hono + @genkit-ai/fetch test server for @genkit-ai/client integration tests.",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "start": "tsx src/start.ts",
+    "check": "tsc"
+  },
+  "license": "Apache-2.0",
+  "dependencies": {
+    "@genkit-ai/fetch": "workspace:*",
+    "@hono/node-server": "^1.13.0",
+    "genkit": "workspace:*",
+    "hono": "^4.6.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.3",
+    "get-port": "^5.1.0",
+    "tsx": "^4.19.2",
+    "typescript": "^5.9.3"
+  }
+}
