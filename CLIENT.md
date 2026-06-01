@@ -12,11 +12,11 @@ Genkit's server-side model is mature: **Actions** are the universal callable uni
 
 **Vision:** A three-layer client stack that mirrors Genkit's architecture rather than copying chat-first SDKs wholesale:
 
-| Layer | Package (proposed) | Responsibility |
-| --- | --- | --- |
-| **1 — Headless client** | `@genkit-ai/client` | Transport, protocol, streaming, errors, abort, reconnect |
+| Layer                      | Package (proposed)                                    | Responsibility                                             |
+| -------------------------- | ----------------------------------------------------- | ---------------------------------------------------------- |
+| **1 — Headless client**    | `@genkit-ai/client`                                   | Transport, protocol, streaming, errors, abort, reconnect   |
 | **2 — Type-safe bindings** | `@genkit-ai/client` + shared types / optional codegen | Infer input/output/stream from server `Action` definitions |
-| **3 — Framework adapters** | `@genkit-ai/react`, `@genkit-ai/vue`, etc. | Reactive state hooks built on Layer 1 |
+| **3 — Framework adapters** | `@genkit-ai/react`, `@genkit-ai/vue`, etc.            | Reactive state hooks built on Layer 1                      |
 
 Genkit is broader than chat: RAG pipelines, structured output, tool/interrupt flows, multi-step agents, and plain request/response APIs all need first-class client primitives. Chat should be a **pattern**, not the **default**.
 
@@ -65,11 +65,11 @@ This pattern — `runFlow<typeof myFlow>` — is the **only** type-safety story 
 
 Multiple plugins expose Actions over HTTP using the **callable protocol**:
 
-| Plugin | Handler | Notes |
-| --- | --- | --- |
-| `@genkit-ai/express` | `expressHandler(action)` | Production flow server; `startFlowServer` |
-| `@genkit-ai/next` | `appRoute(action)` | App Router route handlers |
-| `@genkit-ai/fetch` | `fetchHandler(action)`, `fetchHandlers(actions, prefix)` | Workers, Hono, edge runtimes |
+| Plugin               | Handler                                                  | Notes                                     |
+| -------------------- | -------------------------------------------------------- | ----------------------------------------- |
+| `@genkit-ai/express` | `expressHandler(action)`                                 | Production flow server; `startFlowServer` |
+| `@genkit-ai/next`    | `appRoute(action)`                                       | App Router route handlers                 |
+| `@genkit-ai/fetch`   | `fetchHandler(action)`, `fetchHandlers(actions, prefix)` | Workers, Hono, edge runtimes              |
 
 All use the same wire format:
 
@@ -103,17 +103,17 @@ There are **no** official React/Vue/Svelte/Angular hooks for Genkit client-side 
 
 ### Gaps and pain points
 
-| Gap | Impact |
-| --- | --- |
-| **Beta-only, flow-named APIs** | `runFlow` implies flows only, but `fetchHandler`/`expressHandler` accept any Action; naming confuses the mental model |
-| **No structured error type on client** | Server emits `HttpErrorWireFormat` (`status`, `message`, `details`); client throws plain `Error` strings (see TODO in `client.ts`) |
-| **No framework hooks** | Every app reimplements loading/error/abort/stream accumulation |
-| **Type safety requires server imports** | No standalone client codegen; separate-repo frontends get `any` |
-| **Two streaming protocols** | Dev (`/api/runAction`) vs prod (callable SSE) — client only speaks prod |
-| **No transport abstraction** | URL + headers passed ad hoc; no plugin for auth refresh, base URL, tracing headers |
-| **Chat is manual** | Tool calls, interrupts, multi-turn state not abstracted despite rich server support |
-| **No retry/reconnect policy** | Durable streaming has reconnect primitive; no built-in retry for transient errors |
-| **Stream chunk typing is loose** | `streamFlow<Menu, MenuItem>` requires casts in Angular sample due to union inference |
+| Gap                                     | Impact                                                                                                                             |
+| --------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| **Beta-only, flow-named APIs**          | `runFlow` implies flows only, but `fetchHandler`/`expressHandler` accept any Action; naming confuses the mental model              |
+| **No structured error type on client**  | Server emits `HttpErrorWireFormat` (`status`, `message`, `details`); client throws plain `Error` strings (see TODO in `client.ts`) |
+| **No framework hooks**                  | Every app reimplements loading/error/abort/stream accumulation                                                                     |
+| **Type safety requires server imports** | No standalone client codegen; separate-repo frontends get `any`                                                                    |
+| **Two streaming protocols**             | Dev (`/api/runAction`) vs prod (callable SSE) — client only speaks prod                                                            |
+| **No transport abstraction**            | URL + headers passed ad hoc; no plugin for auth refresh, base URL, tracing headers                                                 |
+| **Chat is manual**                      | Tool calls, interrupts, multi-turn state not abstracted despite rich server support                                                |
+| **No retry/reconnect policy**           | Durable streaming has reconnect primitive; no built-in retry for transient errors                                                  |
+| **Stream chunk typing is loose**        | `streamFlow<Menu, MenuItem>` requires casts in Angular sample due to union inference                                               |
 
 ---
 
@@ -123,24 +123,24 @@ There are **no** official React/Vue/Svelte/Angular hooks for Genkit client-side 
 
 From the core codebase:
 
-| Term | Definition | Registry `actionType` |
-| --- | --- | --- |
-| **Action** | "Self-describing, validating, observable, locally and remotely callable function" (`js/core/src/action.ts`) | `flow`, `tool`, `tool.v2`, `model`, `prompt`, `retriever`, … |
-| **Flow** | "Observable, streamable, (optionally) strongly typed function" — a **subtype of Action** (`js/core/src/flow.ts`) | `flow` |
-| **Tool** | Model-invokable function | `tool` / `tool.v2` |
-| **Callable protocol** | HTTP wire format for remote Action invocation | — |
-| **Session / Chat** | Server-side conversation state (`ai.createSession()`, `session.chat()`) | — |
+| Term                  | Definition                                                                                                       | Registry `actionType`                                        |
+| --------------------- | ---------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------ |
+| **Action**            | "Self-describing, validating, observable, locally and remotely callable function" (`js/core/src/action.ts`)      | `flow`, `tool`, `tool.v2`, `model`, `prompt`, `retriever`, … |
+| **Flow**              | "Observable, streamable, (optionally) strongly typed function" — a **subtype of Action** (`js/core/src/flow.ts`) | `flow`                                                       |
+| **Tool**              | Model-invokable function                                                                                         | `tool` / `tool.v2`                                           |
+| **Callable protocol** | HTTP wire format for remote Action invocation                                                                    | —                                                            |
+| **Session / Chat**    | Server-side conversation state (`ai.createSession()`, `session.chat()`)                                          | —                                                            |
 
 **Key insight:** `defineFlow` registers an Action with `actionType: 'flow'`. Flows are Actions; not all Actions are flows. HTTP handlers (`expressHandler`, `fetchHandler`, `appRoute`) accept **`Action`**, not `Flow` specifically.
 
 ### Recommended canonical terms
 
-| Context | Use | Avoid |
-| --- | --- | --- |
-| **Public docs / app developer API** | **Flow** for endpoints users define with `defineFlow` | Calling everything an "action" in user-facing docs |
-| **Client library internals / generic APIs** | **Action** for protocol-level invoke/stream | — |
-| **Wire protocol** | **Callable protocol** | "REST API", "flow protocol" |
-| **Dev tooling** | **runAction** (matches reflection API) | — |
+| Context                                     | Use                                                   | Avoid                                              |
+| ------------------------------------------- | ----------------------------------------------------- | -------------------------------------------------- |
+| **Public docs / app developer API**         | **Flow** for endpoints users define with `defineFlow` | Calling everything an "action" in user-facing docs |
+| **Client library internals / generic APIs** | **Action** for protocol-level invoke/stream           | —                                                  |
+| **Wire protocol**                           | **Callable protocol**                                 | "REST API", "flow protocol"                        |
+| **Dev tooling**                             | **runAction** (matches reflection API)                | —                                                  |
 
 ### API naming recommendation
 
@@ -157,17 +157,17 @@ useAction               useFlow (deprecated alias)    Framework hook
 
 - **`runAction` / `streamAction`** align with reflection server, `fetchHandler`, and the Action abstraction — future-proof if users expose tools or prompts over HTTP.
 - **`runFlow` / `streamFlow`** remain as aliases for backward compatibility and match existing docs/samples.
-- Framework hooks should prefer **`useAction`** — a menu generator, RAG query, or agent step is not a "flow" in the user's mental model of UI state, but it *is* an action invocation.
+- Framework hooks should prefer **`useAction`** — a menu generator, RAG query, or agent step is not a "flow" in the user's mental model of UI state, but it _is_ an action invocation.
 
 ### Hook naming (framework layer)
 
-| Hook | When to use |
-| --- | --- |
-| **`useAction`** | Generic invoke: loading, error, result, `execute(input)`, abort |
-| **`useStream`** | Streaming invoke: chunks, final output, abort, optional reconnect |
-| **`useChat`** | Multi-turn **message-list** UX where input/output are chat-shaped (roles, parts, tool requests/responses) |
-| **`useObject`** | Structured output: stream partial JSON/objects into typed state |
-| **`useCompletion`** | Single text prompt → streamed/completed text (thin wrapper over `useStream` for string output) |
+| Hook                | When to use                                                                                               |
+| ------------------- | --------------------------------------------------------------------------------------------------------- |
+| **`useAction`**     | Generic invoke: loading, error, result, `execute(input)`, abort                                           |
+| **`useStream`**     | Streaming invoke: chunks, final output, abort, optional reconnect                                         |
+| **`useChat`**       | Multi-turn **message-list** UX where input/output are chat-shaped (roles, parts, tool requests/responses) |
+| **`useObject`**     | Structured output: stream partial JSON/objects into typed state                                           |
+| **`useCompletion`** | Single text prompt → streamed/completed text (thin wrapper over `useStream` for string output)            |
 
 **Do not** make `useChat` the default entry point. Most Genkit samples are flows, not chat endpoints.
 
@@ -237,7 +237,8 @@ interface RunActionRequest<TInput = unknown> {
   abortSignal?: AbortSignal;
 }
 
-interface StreamActionRequest<TInput = unknown> extends RunActionRequest<TInput> {
+interface StreamActionRequest<TInput = unknown>
+  extends RunActionRequest<TInput> {
   /** Reconnect to durable stream */
   streamId?: string;
 }
@@ -265,7 +266,7 @@ Parse server `HttpErrorWireFormat` into a typed error:
 
 ```typescript
 class GenkitClientError extends Error {
-  readonly status: StatusName;  // e.g. 'PERMISSION_DENIED', 'INVALID_ARGUMENT'
+  readonly status: StatusName; // e.g. 'PERMISSION_DENIED', 'INVALID_ARGUMENT'
   readonly details?: unknown;
   readonly traceId?: string;
 }
@@ -305,7 +306,7 @@ export interface GenkitActions {
   menuSuggestion: ActionFn<
     { theme: string | null },
     Menu,
-    MenuItem  // stream chunk
+    MenuItem // stream chunk
   >;
 }
 ```
@@ -363,15 +364,15 @@ Alternatively, framework adapters could live as subpath exports: `@genkit-ai/cli
 
 ### Decision matrix: which primitive?
 
-| Use case | Server pattern | Client primitive | Framework hook |
-| --- | --- | --- | --- |
-| One-shot structured output | `defineFlow` with `outputSchema` | `runAction` | `useAction` |
-| Progressive structured output | flow + `sendChunk` partial objects | `streamAction` | `useObject` |
-| Text streaming | flow + `sendChunk(string)` | `streamAction` | `useStream` or `useCompletion` |
-| Multi-turn chat with tools | flow accepting message + toolResponse | `streamAction` | `useChat` |
-| Long-running stream, reconnect | flow + `StreamManager` | `streamAction({ streamId })` | `useStream({ reconnect: true })` |
-| Agent with interrupts | flow + interrupt/resume protocol | `streamAction` + resume input | `useChat` with interrupt state |
-| Non-AI utility flow | plain `defineFlow` | `runAction` | `useAction` |
+| Use case                       | Server pattern                        | Client primitive              | Framework hook                   |
+| ------------------------------ | ------------------------------------- | ----------------------------- | -------------------------------- |
+| One-shot structured output     | `defineFlow` with `outputSchema`      | `runAction`                   | `useAction`                      |
+| Progressive structured output  | flow + `sendChunk` partial objects    | `streamAction`                | `useObject`                      |
+| Text streaming                 | flow + `sendChunk(string)`            | `streamAction`                | `useStream` or `useCompletion`   |
+| Multi-turn chat with tools     | flow accepting message + toolResponse | `streamAction`                | `useChat`                        |
+| Long-running stream, reconnect | flow + `StreamManager`                | `streamAction({ streamId })`  | `useStream({ reconnect: true })` |
+| Agent with interrupts          | flow + interrupt/resume protocol      | `streamAction` + resume input | `useChat` with interrupt state   |
+| Non-AI utility flow            | plain `defineFlow`                    | `runAction`                   | `useAction`                      |
 
 ### Streaming vs non-streaming
 
@@ -395,12 +396,12 @@ Alternatively, framework adapters could live as subpath exports: `@genkit-ai/cli
 
 ### Error handling, abort, retry
 
-| Concern | Headless behavior | Hook behavior |
-| --- | --- | --- |
-| **Abort** | Pass `AbortSignal`; abort fetch | `abort()` cancels in-flight; reset or preserve partial stream (configurable) |
-| **Errors** | Throw `GenkitClientError` with `status`, `details` | Surface `error` state; map `PERMISSION_DENIED` → auth redirect hook |
-| **Retry** | Optional `retry: { maxAttempts, retryOn: StatusName[] }` | `retry()` function; auto-retry only for idempotent `runAction` unless explicitly enabled |
-| **User-facing vs internal** | Pass through server `status`; never leak stack to UI by default | Show generic message; log `details.stack` in dev |
+| Concern                     | Headless behavior                                               | Hook behavior                                                                            |
+| --------------------------- | --------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| **Abort**                   | Pass `AbortSignal`; abort fetch                                 | `abort()` cancels in-flight; reset or preserve partial stream (configurable)             |
+| **Errors**                  | Throw `GenkitClientError` with `status`, `details`              | Surface `error` state; map `PERMISSION_DENIED` → auth redirect hook                      |
+| **Retry**                   | Optional `retry: { maxAttempts, retryOn: StatusName[] }`        | `retry()` function; auto-retry only for idempotent `runAction` unless explicitly enabled |
+| **User-facing vs internal** | Pass through server `status`; never leak stack to UI by default | Show generic message; log `details.stack` in dev                                         |
 
 ### Chat is a pattern, not the protocol
 
@@ -423,18 +424,18 @@ For apps using OpenAI-compatible message shapes internally, offer optional norma
 
 ## Competitive Analysis
 
-| Dimension | Genkit (proposed) | Vercel AI SDK UI | TanStack AI |
-| --- | --- | --- | --- |
-| **Primary abstraction** | Callable Action/Flow over HTTP | Chat/completion/object generation hooks | Chat + isomorphic tools |
-| **Scope** | Full Genkit surface (flows, tools, RAG, agents, structured output) | LLM provider interactions; UI for chat/completion/object | LLM provider + tool loop |
-| **Headless client** | `@genkit-ai/client` (proposed) | `ai` package core; UI separate | `@tanstack/ai-client` |
-| **Framework hooks** | `useAction`, `useStream`, `useChat`, `useObject` | `useChat`, `useCompletion`, `useObject` | `useChat` (React/Solid) |
-| **Transport** | Callable HTTP + optional reflection (proposed) | `DefaultChatTransport`, custom transports, `DirectChatTransport` | Connection adapters (SSE, HTTP stream) |
-| **Type safety** | `typeof Action` inference + optional codegen | Schema helpers, `useObject` with Zod | `toolDefinition()` + Zod inference, `InferChatMessages` |
-| **Tool calling UX** | Server-side in flow; client sees toolRequest/toolResponse in stream | First-class `useChat` tool UI, generative UI | Isomorphic tools, approval flow built-in |
-| **Streaming reconnect** | `StreamManager` + `streamId` (server exists; client primitive exists) | Stream resume (chat persistence docs) | Connection adapter dependent |
-| **Provider coupling** | None — client talks to *your* Genkit server | Tightly coupled to LLM providers | Tightly coupled to LLM providers |
-| **Non-chat first-class** | Yes — `useAction`, `useObject` | Partial — `useCompletion`, `useObject` | Mostly chat-centric hooks |
+| Dimension                | Genkit (proposed)                                                     | Vercel AI SDK UI                                                 | TanStack AI                                             |
+| ------------------------ | --------------------------------------------------------------------- | ---------------------------------------------------------------- | ------------------------------------------------------- |
+| **Primary abstraction**  | Callable Action/Flow over HTTP                                        | Chat/completion/object generation hooks                          | Chat + isomorphic tools                                 |
+| **Scope**                | Full Genkit surface (flows, tools, RAG, agents, structured output)    | LLM provider interactions; UI for chat/completion/object         | LLM provider + tool loop                                |
+| **Headless client**      | `@genkit-ai/client` (proposed)                                        | `ai` package core; UI separate                                   | `@tanstack/ai-client`                                   |
+| **Framework hooks**      | `useAction`, `useStream`, `useChat`, `useObject`                      | `useChat`, `useCompletion`, `useObject`                          | `useChat` (React/Solid)                                 |
+| **Transport**            | Callable HTTP + optional reflection (proposed)                        | `DefaultChatTransport`, custom transports, `DirectChatTransport` | Connection adapters (SSE, HTTP stream)                  |
+| **Type safety**          | `typeof Action` inference + optional codegen                          | Schema helpers, `useObject` with Zod                             | `toolDefinition()` + Zod inference, `InferChatMessages` |
+| **Tool calling UX**      | Server-side in flow; client sees toolRequest/toolResponse in stream   | First-class `useChat` tool UI, generative UI                     | Isomorphic tools, approval flow built-in                |
+| **Streaming reconnect**  | `StreamManager` + `streamId` (server exists; client primitive exists) | Stream resume (chat persistence docs)                            | Connection adapter dependent                            |
+| **Provider coupling**    | None — client talks to _your_ Genkit server                           | Tightly coupled to LLM providers                                 | Tightly coupled to LLM providers                        |
+| **Non-chat first-class** | Yes — `useAction`, `useObject`                                        | Partial — `useCompletion`, `useObject`                           | Mostly chat-centric hooks                               |
 
 **What to adopt:**
 
@@ -683,18 +684,18 @@ const client = createGenkitClient({ transport });
 
 ## References (codebase)
 
-| Resource | Path |
-| --- | --- |
-| Current client | `js/genkit/src/client/client.ts` |
-| Type-safe Next wrapper | `js/plugins/next/src/client.ts` |
-| Callable HTTP handler (Express) | `js/plugins/express/src/index.ts` |
-| Callable HTTP handler (Fetch) | `js/plugins/fetch/src/index.ts` |
-| Action / Flow definitions | `js/core/src/action.ts`, `js/core/src/flow.ts` |
-| Error wire format | `js/core/src/error.ts` |
-| Dev reflection protocol | `js/core/src/reflection.ts`, `docs/reflection-v2-protocol.md` |
-| Next.js sample (manual client) | `js/testapps/next/src/app/page.tsx` |
-| Angular sample (manual client) | `js/testapps/angular/src/app/app.ts` |
-| Chatbot sample (tool messages) | `samples/js-chatbot/genkit-app/.../chatbot.component.ts` |
+| Resource                        | Path                                                          |
+| ------------------------------- | ------------------------------------------------------------- |
+| Current client                  | `js/genkit/src/client/client.ts`                              |
+| Type-safe Next wrapper          | `js/plugins/next/src/client.ts`                               |
+| Callable HTTP handler (Express) | `js/plugins/express/src/index.ts`                             |
+| Callable HTTP handler (Fetch)   | `js/plugins/fetch/src/index.ts`                               |
+| Action / Flow definitions       | `js/core/src/action.ts`, `js/core/src/flow.ts`                |
+| Error wire format               | `js/core/src/error.ts`                                        |
+| Dev reflection protocol         | `js/core/src/reflection.ts`, `docs/reflection-v2-protocol.md` |
+| Next.js sample (manual client)  | `js/testapps/next/src/app/page.tsx`                           |
+| Angular sample (manual client)  | `js/testapps/angular/src/app/app.ts`                          |
+| Chatbot sample (tool messages)  | `samples/js-chatbot/genkit-app/.../chatbot.component.ts`      |
 
 ## References (external)
 
