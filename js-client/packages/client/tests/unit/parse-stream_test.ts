@@ -109,6 +109,34 @@ describe('parseStreamResponse', () => {
     );
   });
 
+  it('resolves undefined when the stream ends after [DONE] without a result', async () => {
+    const chunks: number[] = [];
+    const output = await parseStreamResponse<undefined, number>(
+      streamResponse(['data: {"message":1}\n\n', 'data: [DONE]\n\n']),
+      (chunk) => chunks.push(chunk)
+    );
+
+    assert.deepEqual(chunks, [1]);
+    assert.equal(output, undefined);
+  });
+
+  it('throws when the stream ends without a result or terminator', async () => {
+    await assert.rejects(
+      parseStreamResponse(
+        streamResponse(['data: {"message":1}\n\n']),
+        () => undefined
+      ),
+      (error) => {
+        const clientError = error as GenkitClientError;
+        assert.equal(
+          clientError.message,
+          'UNKNOWN: Stream ended before a result was received'
+        );
+        return true;
+      }
+    );
+  });
+
   it('throws on unknown stream event formats', async () => {
     await assert.rejects(
       parseStreamResponse(streamResponse(['event: nope\n\n']), () => undefined),

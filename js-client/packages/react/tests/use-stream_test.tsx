@@ -80,6 +80,23 @@ describe('useStream', () => {
     );
   });
 
+  it('keeps execute stable across renders with equal inline headers', () => {
+    const client = clientFor(() => streamResponse(['data: {"result":1}\n\n']));
+    const { result, rerender } = renderHook(
+      ({ headers }: { headers: HeadersInit }) =>
+        useStream({ url: '/x', headers }),
+      {
+        wrapper: wrapperFor(client),
+        initialProps: { headers: { a: '1' } as HeadersInit },
+      }
+    );
+    const first = result.current.execute;
+    // New object reference, identical content — must not re-create the
+    // executor (which would abort any in-flight stream every render).
+    rerender({ headers: { a: '1' } as HeadersInit });
+    assert.equal(result.current.execute, first);
+  });
+
   it('can reset accumulated stream state', async () => {
     const client = clientFor(() =>
       streamResponse([
