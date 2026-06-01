@@ -74,6 +74,22 @@ describe('useAction', () => {
     );
   });
 
+  it('keeps execute stable across renders with equal inline headers', () => {
+    const client = clientFor(() => Response.json({ result: 'ok' }));
+    const { result, rerender } = renderHook(
+      ({ headers }: { headers: HeadersInit }) =>
+        useAction({ url: '/echo', headers }),
+      {
+        wrapper: wrapperFor(client),
+        initialProps: { headers: { a: '1' } as HeadersInit },
+      }
+    );
+    const first = result.current.execute;
+    // New object reference, identical content — must not re-create execute.
+    rerender({ headers: { a: '1' } as HeadersInit });
+    assert.equal(result.current.execute, first);
+  });
+
   it('resets state', async () => {
     const client = clientFor(() => Response.json({ result: 'ok' }));
     const { result } = renderHook(() => useAction({ url: '/echo' }), {

@@ -20,6 +20,7 @@ import type { Action, GenkitClient, Input, Output } from '@genkit-ai/client';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useGenkitClient } from './context.js';
 import { isAbortError } from './internal/abort-error.js';
+import { serializeHeaders } from './internal/headers.js';
 
 export interface UseActionOptions {
   url: string;
@@ -47,6 +48,12 @@ export function useAction<A extends Action = Action>(
   const controllerRef = useRef<AbortController | undefined>(undefined);
   const callIdRef = useRef(0);
 
+  // Keep the latest headers in a ref so `execute` can read them without
+  // listing the (often inline, unstable) headers object in its deps.
+  const headersRef = useRef(options.headers);
+  headersRef.current = options.headers;
+  const headersKey = serializeHeaders(options.headers);
+
   const abort = useCallback(() => {
     callIdRef.current += 1;
     controllerRef.current?.abort();
@@ -61,7 +68,7 @@ export function useAction<A extends Action = Action>(
   }, [abort]);
 
   const execute = useCallback(
-    async (input?: Input<A>) => {
+    (input?: Input<A>) => {
       callIdRef.current += 1;
       const callId = callIdRef.current;
       controllerRef.current?.abort();
@@ -72,31 +79,39 @@ export function useAction<A extends Action = Action>(
       setError(undefined);
       setData(undefined);
 
-      try {
-        const result = await client.runAction<A>({
-          url: options.url,
-          input,
-          headers: options.headers,
-          abortSignal: controller.signal,
-        });
-        if (callId === callIdRef.current) {
-          setData(result);
-          setIsLoading(false);
-          controllerRef.current = undefined;
-        }
-        return result;
-      } catch (err) {
-        if (callId === callIdRef.current) {
-          if (!isAbortError(err)) {
-            setError(err instanceof Error ? err : new Error(String(err)));
+      const promise = (async () => {
+        try {
+          const result = await client.runAction<A>({
+            url: options.url,
+            input,
+            headers: headersRef.current,
+            abortSignal: controller.signal,
+          });
+          if (callId === callIdRef.current) {
+            setData(result);
+            setIsLoading(false);
+            controllerRef.current = undefined;
           }
-          setIsLoading(false);
-          controllerRef.current = undefined;
+          return result;
+        } catch (err) {
+          if (callId === callIdRef.current) {
+            if (!isAbortError(err)) {
+              setError(err instanceof Error ? err : new Error(String(err)));
+            }
+            setIsLoading(false);
+            controllerRef.current = undefined;
+          }
+          throw err;
         }
-        throw err;
-      }
+      })();
+
+      // The error is surfaced via `error` state, so a fire-and-forget caller
+      // that ignores the returned promise must not trigger an unhandled
+      // rejection. Awaiting callers still observe the rejection.
+      promise.catch(() => {});
+      return promise;
     },
-    [client, options.headers, options.url]
+    [client, headersKey, options.url]
   );
 
   useEffect(() => abort, [abort]);

@@ -57,6 +57,7 @@ export async function parseStreamResponse<TOutput, TChunk>(
   const reader = response.body.getReader();
   const decoder = new TextDecoder();
   let buffer = '';
+  let sawTerminator = false;
 
   for (;;) {
     const result = await reader.read();
@@ -69,6 +70,9 @@ export async function parseStreamResponse<TOutput, TChunk>(
       const rawEvent = buffer.substring(0, delimiterIndex);
       buffer = buffer.substring(delimiterIndex + streamDelimiter.length);
       const parsed = parseStreamEvent<TOutput, TChunk>(rawEvent);
+      if (parsed.type === 'done') {
+        sawTerminator = true;
+      }
       const maybeResult = handleParsedEvent(parsed, response, sendChunk);
       if (maybeResult.done) {
         return maybeResult.result;
@@ -83,15 +87,25 @@ export async function parseStreamResponse<TOutput, TChunk>(
 
   if (buffer.trim().length > 0) {
     const parsed = parseStreamEvent<TOutput, TChunk>(buffer);
+    if (parsed.type === 'done') {
+      sawTerminator = true;
+    }
     const maybeResult = handleParsedEvent(parsed, response, sendChunk);
     if (maybeResult.done) {
       return maybeResult.result;
     }
   }
 
+  // A conformant stream terminates with a `result` envelope (returned above).
+  // Tolerate streaming-only flows that close gracefully after a `[DONE]`
+  // sentinel without a result — resolve to undefined rather than erroring.
+  if (sawTerminator) {
+    return undefined as TOutput;
+  }
+
   throw new GenkitClientError({
     status: 'UNKNOWN',
-    message: 'Stream did not terminate correctly',
+    message: 'Stream ended before a result was received',
     httpStatus: response.status,
     traceId: response.headers.get('x-genkit-trace-id') ?? undefined,
   });

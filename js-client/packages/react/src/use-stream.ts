@@ -25,6 +25,7 @@ import type {
 } from '@genkit-ai/client';
 import { useCallback, useEffect, useMemo, useSyncExternalStore } from 'react';
 import { useGenkitClient } from './context.js';
+import { serializeHeaders } from './internal/headers.js';
 import {
   createStreamExecutor,
   type ActionStatus,
@@ -53,6 +54,10 @@ export function useStream<A extends Action = Action>(
 ): UseStreamResult<Input<A>, StreamChunk<A>, Output<A>> {
   const contextClient = useGenkitClient();
   const client = options.client ?? contextClient;
+  // Depend on a content-derived key rather than the (often inline, unstable)
+  // headers object, so the executor is not re-created — and the in-flight
+  // stream aborted — on every render.
+  const headersKey = serializeHeaders(options.headers);
   const executor = useMemo(
     () =>
       createStreamExecutor<Input<A>, StreamChunk<A>, Output<A>>({
@@ -60,7 +65,8 @@ export function useStream<A extends Action = Action>(
         url: options.url,
         headers: options.headers,
       }),
-    [client, options.headers, options.url]
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [client, headersKey, options.url]
   );
   const state = useSyncExternalStore(
     executor.subscribe,
@@ -69,7 +75,14 @@ export function useStream<A extends Action = Action>(
   );
 
   const execute = useCallback(
-    (input?: Input<A>) => executor.execute(input),
+    (input?: Input<A>) => {
+      const promise = executor.execute(input);
+      // Errors are surfaced via `error` state; prevent an unhandled rejection
+      // when a fire-and-forget caller ignores the returned promise. Awaiting
+      // callers still observe the rejection.
+      promise.catch(() => {});
+      return promise;
+    },
     [executor]
   );
   const abort = useCallback(() => executor.abort(), [executor]);
